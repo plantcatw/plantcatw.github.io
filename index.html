@@ -4,8 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Roblox Sound Finder</title>
+    <!-- Favicon (place favicon.ico in your root folder) -->
+    <link rel="icon" type="image/png" href="/favicon.ico" />
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
             background: #0a0a0a;
             color: #e0e0e0;
@@ -16,7 +22,13 @@
             margin: 0;
             padding: 16px;
         }
-        #app { max-width: 1200px; width: 100%; display: flex; flex-direction: column; gap: 12px; }
+        #app {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
         #info-tips {
             background: #141414;
             border: 1px solid #2a2a2a;
@@ -25,8 +37,11 @@
             font-size: 0.85rem;
             color: #aaa;
             line-height: 1.5;
+            user-select: text;
         }
-        #info-tips strong { color: #66BB6A; }
+        #info-tips strong {
+            color: #66BB6A;
+        }
         #search-bar {
             background: #1a1a1a;
             border-radius: 12px;
@@ -41,7 +56,8 @@
             z-index: 10;
             box-shadow: 0 4px 12px rgba(0,0,0,0.8);
         }
-        #search-bar input, #search-bar select {
+        #search-bar input,
+        #search-bar select {
             background: #2a2a2a;
             border: 1px solid #444;
             color: #eee;
@@ -50,9 +66,18 @@
             font-size: 0.9rem;
             outline: none;
         }
-        #search-bar input:focus, #search-bar select:focus { border-color: #4CAF50; }
-        #search-bar input { flex: 2; min-width: 150px; }
-        #search-bar select { flex: 0 1 auto; min-width: 100px; }
+        #search-bar input:focus,
+        #search-bar select:focus {
+            border-color: #4CAF50;
+        }
+        #search-bar input {
+            flex: 2;
+            min-width: 150px;
+        }
+        #search-bar select {
+            flex: 0 1 auto;
+            min-width: 100px;
+        }
         .tag-filter {
             display: flex;
             flex-wrap: wrap;
@@ -60,7 +85,11 @@
             align-items: center;
             flex: 1 1 100%;
         }
-        .tag-filter span { font-size: 0.8rem; color: #aaa; margin-right: 4px; }
+        .tag-filter span {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-right: 4px;
+        }
         .tag-chip {
             background: #2a2a2a;
             border: 1px solid #444;
@@ -71,9 +100,17 @@
             transition: 0.2s;
             user-select: none;
         }
-        .tag-chip.active { background: #4CAF50; border-color: #66BB6A; color: #fff; }
-        .tag-chip:hover { background: #3a3a3a; }
-        .tag-chip.active:hover { background: #66BB6A; }
+        .tag-chip.active {
+            background: #4CAF50;
+            border-color: #66BB6A;
+            color: #fff;
+        }
+        .tag-chip:hover {
+            background: #3a3a3a;
+        }
+        .tag-chip.active:hover {
+            background: #66BB6A;
+        }
         #clear-tags {
             background: none;
             border: none;
@@ -83,7 +120,9 @@
             text-decoration: underline;
             padding: 0 6px;
         }
-        #clear-tags:hover { color: #ccc; }
+        #clear-tags:hover {
+            color: #ccc;
+        }
         #sound-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -103,9 +142,19 @@
             position: relative;
             overflow: hidden;
         }
-        .sound-card:hover { border-color: #4CAF50; background: #1e1e1e; }
-        .sound-card .title { font-weight: 600; font-size: 0.95rem; margin-right: 30px; }
-        .sound-card .creator { font-size: 0.8rem; color: #aaa; }
+        .sound-card:hover {
+            border-color: #4CAF50;
+            background: #1e1e1e;
+        }
+        .sound-card .title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-right: 30px;
+        }
+        .sound-card .creator {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
         .sound-card .meta {
             display: flex;
             flex-wrap: wrap;
@@ -120,7 +169,11 @@
             border-radius: 12px;
             color: #bbb;
         }
-        .sound-card .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+        .sound-card .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
         .sound-card .tags .tag {
             background: #222;
             padding: 0 6px;
@@ -146,9 +199,16 @@
             justify-content: center;
             transition: 0.2s;
         }
-        .play-btn:hover { background: #66BB6A; transform: scale(1.05); }
-        .play-btn.playing { background: #d32f2f; }
-        .play-btn.playing:hover { background: #f44336; }
+        .play-btn:hover {
+            background: #66BB6A;
+            transform: scale(1.05);
+        }
+        .play-btn.playing {
+            background: #d32f2f;
+        }
+        .play-btn.playing:hover {
+            background: #f44336;
+        }
         .audio-controls {
             display: none;
             width: 100%;
@@ -160,7 +220,9 @@
             box-sizing: border-box;
             padding: 0 2px;
         }
-        .audio-controls.visible { display: flex; }
+        .audio-controls.visible {
+            display: flex;
+        }
         .audio-controls input[type="range"] {
             flex: 1;
             min-width: 0;
@@ -187,16 +249,42 @@
             cursor: pointer;
             border: none;
         }
-        .audio-controls .time { min-width: 70px; text-align: right; flex-shrink: 0; }
-        .audio-controls .duration { min-width: 40px; flex-shrink: 0; }
-        #no-results { text-align: center; color: #666; padding: 40px 0; font-size: 1.1rem; }
-        @media (max-width: 600px) {
-            #search-bar { flex-direction: column; align-items: stretch; }
-            #search-bar input, #search-bar select { width: 100%; }
-            .tag-filter { flex-wrap: wrap; }
-            #sound-grid { grid-template-columns: 1fr 1fr; }
+        .audio-controls .time {
+            min-width: 70px;
+            text-align: right;
+            flex-shrink: 0;
         }
-        @media (max-width: 400px) { #sound-grid { grid-template-columns: 1fr; } }
+        .audio-controls .duration {
+            min-width: 40px;
+            flex-shrink: 0;
+        }
+        #no-results {
+            text-align: center;
+            color: #666;
+            padding: 40px 0;
+            font-size: 1.1rem;
+        }
+        @media (max-width: 600px) {
+            #search-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #search-bar input,
+            #search-bar select {
+                width: 100%;
+            }
+            .tag-filter {
+                flex-wrap: wrap;
+            }
+            #sound-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 400px) {
+            #sound-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -206,7 +294,9 @@
         </div>
         <div id="search-bar">
             <input type="text" id="keyword-input" placeholder="Search name or creator..." />
-            <select id="category-select"><option value="">All categories</option></select>
+            <select id="category-select">
+                <option value="">All categories</option>
+            </select>
             <div class="tag-filter">
                 <span>Tags:</span>
                 <div id="tag-chips"></div>
@@ -225,11 +315,8 @@
         let allSounds = [];
         let tagSet = new Set();
 
-        // ---------- Proxy URL (more reliable than allorigins) ----------
-        function getProxyUrl(id) {
-            // corsproxy.io is more consistent
-            return `https://corsproxy.io/?url=${encodeURIComponent('https://www.roblox.com/asset/?id=' + id)}`;
-        }
+        // ---------- Your Cloudflare Worker URL ----------
+        const PROXY_URL = 'https://plantaudioworker.workers.dev/?id=';
 
         // ---------- Load data ----------
         async function loadData() {
@@ -238,7 +325,9 @@
                 if (!resp.ok) throw new Error('Failed to load sounds.json');
                 allSounds = await resp.json();
                 allSounds.forEach(s => {
-                    if (s.tags && Array.isArray(s.tags)) s.tags.forEach(t => tagSet.add(t));
+                    if (s.tags && Array.isArray(s.tags)) {
+                        s.tags.forEach(t => tagSet.add(t));
+                    }
                 });
                 populateFilters();
                 render();
@@ -320,7 +409,10 @@
                     <div class="sound-card" data-id="${sound.id}" data-name="${escapeHtml(sound.name || '')}" data-creator="${escapeHtml(sound.creator || '')}">
                         <div class="title">${escapeHtml(sound.name || 'Unnamed')}</div>
                         <div class="creator">${escapeHtml(sound.creator || 'Unknown creator')}</div>
-                        <div class="meta">${categoryHtml}<div class="tags">${tagsHtml}</div></div>
+                        <div class="meta">
+                            ${categoryHtml}
+                            <div class="tags">${tagsHtml}</div>
+                        </div>
                         <button class="play-btn" data-id="${sound.id}">▶</button>
                         <div class="audio-controls">
                             <span class="time">0:00</span>
@@ -363,7 +455,7 @@
             });
         }
 
-        // ---------- togglePlay – dedicated Audio ----------
+        // ---------- togglePlay – dedicated Audio per click ----------
         function togglePlay(card, id) {
             const playBtn = card.querySelector('.play-btn');
             const controls = card.querySelector('.audio-controls');
@@ -396,10 +488,10 @@
                 currentId = null;
             }
 
-            // Create new Audio with proxy URL
+            // Create new Audio with your Worker URL
             const audio = new Audio();
-            const PROXY_URL = 'https://plantaudioworker.workers.dev/?id=';
-            audio.src = proxyUrl;
+            const url = PROXY_URL + id;
+            audio.src = url;
 
             currentAudio = audio;
             currentCard = card;
