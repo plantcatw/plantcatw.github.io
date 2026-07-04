@@ -223,7 +223,7 @@
         /* ---------- Grid of sounds ---------- */
         #sound-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 12px;
             padding-bottom: 20px;
         }
@@ -358,7 +358,7 @@
 
         <!-- Discord section -->
         <div id="discord-section">
-            <span class="label">💬 <strong>join my community server</strong> for skill builder help and other useful resources</span>
+            <span class="label">💬 <strong>Join my community server</strong> for skill builder help and other useful resources</span>
             <a href="https://discord.gg/cY3faJJt5M" target="_blank" class="invite-link">
                 <span>🔗</span> discord.gg/cY3faJJt5M
             </a>
@@ -377,11 +377,11 @@
 
         <!-- Sound grid -->
         <div id="sound-grid"></div>
-        <div id="no-results" style="display:none;">no sounds match your filters.</div>
+        <div id="no-results" style="display:none;">No sounds match your filters.</div>
     </div>
 
     <!-- Copy notification -->
-    <div id="copy-notification">✅ copied to clipboard!</div>
+    <div id="copy-notification">✅ Copied to clipboard!</div>
 
     <script>
         // ---------- Global state ----------
@@ -393,62 +393,70 @@
         // ---------- Tag state: each tag can be 'include', 'exclude', or null ----------
         let tagStates = {};
 
-        // ---------- Tag group definitions (names capitalized) ----------
+        // ---------- Tag group definitions ----------
         const tagGroups = [
             {
                 name: 'Damage',
-                tags: ['blood', 'ragdoll', 'impact', 'stab/slice', 'punch', 'crush', 'slash']
+                tags: ['blood', 'impact', 'stab/slice', 'ragdoll']
             },
             {
                 name: 'Motion',
-                tags: ['footsteps', 'cloth', 'movement', 'swing', 'whoosh', 'landing', 'jump']
+                tags: ['footsteps', 'cloth', 'movement', 'swing']
             },
             {
-                name: 'Elemental',
-                tags: ['steel', 'glass', 'explosion', 'water', 'fire', 'lightning', 'other (magical)']
+                name: 'Theme',
+                tags: ['steel', 'glass/ice', 'explosion', 'water', 'fire', 'lightning', 'other (magical)']
             },
             {
                 name: 'Source',
-                tags: ['jjk', 'dbz', 'project moon', 'ut/dr', 'cartoons', 'animals', 'humor', 'anime', 'video games']
+                tags: ['jjk', 'dragon ball', 'project moon', 'ut/dr', 'vanilla jjs', 'cartoons', 'animals', 'humor']
             },
             {
                 name: 'Meta',
-                tags: ['loop', 'pack', 'misc', 'layered', 'short', 'long']
+                tags: ['voice', 'loop', 'pack', 'layered', 'misc']
             }
         ];
 
-        // ---------- Load data ----------
+        // ---------- Gist raw URL (your public Gist) ----------
+        const GIST_RAW_URL = 'https://gist.githubusercontent.com/plantcatw/9f86c9ee2ebc8e85eef3b2716d7a42dc/raw/bf460dc2a5715d3dcff7ba35709e9759dac056ae/sounds.json';
+
+        // ---------- Load data from Gist ----------
         async function loadData() {
             try {
-                const resp = await fetch('sounds.json');
-                if (!resp.ok) throw new Error('Failed to load sounds.json');
+                const resp = await fetch(GIST_RAW_URL);
+                if (!resp.ok) throw new Error(`Failed to fetch Gist (status ${resp.status})`);
                 allSounds = await resp.json();
+                // Ensure it's an array
+                if (!Array.isArray(allSounds)) {
+                    throw new Error('Gist content is not an array');
+                }
+                // Process tags
                 allSounds.forEach(s => {
                     if (s.tags && Array.isArray(s.tags)) {
                         s.tags.forEach(t => {
                             const lower = t.toLowerCase();
                             tagSet.add(lower);
-                            // Store original casing (first occurrence)
                             if (!tagOriginalMap[lower]) {
                                 tagOriginalMap[lower] = t;
                             }
                         });
                     }
                 });
-                // Initialize tag states for all tags
                 tagSet.forEach(t => { tagStates[t] = null; });
                 populateTagGroups();
                 populateFilters();
                 render();
             } catch (e) {
+                console.error('Failed to load sounds from Gist:', e);
                 document.getElementById('sound-grid').innerHTML =
-                    `<div style="color:#a44;">⚠️ could not load sounds.json. make sure the file exists and is valid JSON.</div>`;
-                console.error(e);
+                    `<div style="color:#a44;">⚠️ Could not load sound library from Gist. Please try again later.</div>`;
             }
         }
 
         function populateFilters() {
             const catSelect = document.getElementById('category-select');
+            // Keep only the first option ("All categories")
+            while (catSelect.options.length > 1) catSelect.remove(1);
             const categories = [...new Set(allSounds.map(s => s.category).filter(Boolean))];
             categories.sort();
             categories.forEach(c => {
@@ -552,6 +560,8 @@
 
                 container.appendChild(groupDiv);
             }
+
+            updateTagChips();
         }
 
         // ---------- Toggle tag state ----------
@@ -624,7 +634,7 @@
             });
         }
 
-        // ---------- Show copy notification ----------
+        // ---------- Copy helpers ----------
         function showCopyNotification() {
             const notification = document.getElementById('copy-notification');
             notification.classList.add('show');
@@ -634,7 +644,6 @@
             }, 1500);
         }
 
-        // ---------- Copy to clipboard ----------
         function copyToClipboard(text) {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
@@ -694,17 +703,14 @@
             });
             grid.innerHTML = html;
 
-            // Attach click handler to each card
             grid.querySelectorAll('.sound-card').forEach(card => {
                 const id = parseInt(card.dataset.id);
                 card.addEventListener('click', (e) => {
-                    // Ctrl+Click (or Cmd+Click on Mac) = copy ID
                     if (e.ctrlKey || e.metaKey) {
                         e.preventDefault();
                         copyToClipboard(id.toString());
                         return;
                     }
-                    // Normal click = open Creator Store
                     window.open(`https://create.roblox.com/store/asset/${id}`, '_blank');
                 });
             });
@@ -716,7 +722,7 @@
                 .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
 
-        // ---------- Event listeners for filters ----------
+        // ---------- Event listeners ----------
         document.getElementById('keyword-input').addEventListener('input', render);
         document.getElementById('category-select').addEventListener('change', render);
 
