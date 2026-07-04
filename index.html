@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Roblox Sound Finder</title>
-    <!-- Favicon (place favicon.ico in your root folder) -->
+    <title>plantcatw sound tags</title>
     <link rel="icon" type="image/png" href="/favicon.ico" />
     <style>
         * {
@@ -149,7 +148,6 @@
         .sound-card .title {
             font-weight: 600;
             font-size: 0.95rem;
-            margin-right: 30px;
         }
         .sound-card .creator {
             font-size: 0.8rem;
@@ -180,83 +178,6 @@
             border-radius: 10px;
             font-size: 0.65rem;
             color: #999;
-        }
-        .play-btn {
-            position: absolute;
-            top: 8px;
-            right: 10px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: none;
-            background: #4CAF50;
-            color: #fff;
-            font-size: 14px;
-            line-height: 1;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-        }
-        .play-btn:hover {
-            background: #66BB6A;
-            transform: scale(1.05);
-        }
-        .play-btn.playing {
-            background: #d32f2f;
-        }
-        .play-btn.playing:hover {
-            background: #f44336;
-        }
-        .audio-controls {
-            display: none;
-            width: 100%;
-            margin-top: 4px;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.7rem;
-            color: #aaa;
-            box-sizing: border-box;
-            padding: 0 2px;
-        }
-        .audio-controls.visible {
-            display: flex;
-        }
-        .audio-controls input[type="range"] {
-            flex: 1;
-            min-width: 0;
-            height: 4px;
-            background: #444;
-            border-radius: 2px;
-            appearance: none;
-            outline: none;
-            cursor: pointer;
-        }
-        .audio-controls input[type="range"]::-webkit-slider-thumb {
-            appearance: none;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4CAF50;
-            cursor: pointer;
-        }
-        .audio-controls input[type="range"]::-moz-range-thumb {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4CAF50;
-            cursor: pointer;
-            border: none;
-        }
-        .audio-controls .time {
-            min-width: 70px;
-            text-align: right;
-            flex-shrink: 0;
-        }
-        .audio-controls .duration {
-            min-width: 40px;
-            flex-shrink: 0;
         }
         #no-results {
             text-align: center;
@@ -290,7 +211,8 @@
 <body>
     <div id="app">
         <div id="info-tips">
-            💡 <strong>Tips:</strong> Click any sound card to copy its ID. <strong>Ctrl+Click</strong> to open store. Click <strong>▶</strong> to preview.
+            💡 <strong>How to use:</strong> Click any sound card to open its <strong>Creator Store</strong> page in a new tab. 
+            You can listen to the audio there (make sure you're logged into Roblox). Use the search bar and tags to filter sounds.
         </div>
         <div id="search-bar">
             <input type="text" id="keyword-input" placeholder="Search name or creator..." />
@@ -308,15 +230,8 @@
     </div>
     <script>
         // ---------- Global state ----------
-        let currentAudio = null;
-        let currentCard = null;
-        let currentId = null;
-
         let allSounds = [];
         let tagSet = new Set();
-
-        // ---------- Your Cloudflare Worker URL ----------
-        const PROXY_URL = 'https://plantaudioworker.workers.dev/?id=';
 
         // ---------- Load data ----------
         async function loadData() {
@@ -413,150 +328,17 @@
                             ${categoryHtml}
                             <div class="tags">${tagsHtml}</div>
                         </div>
-                        <button class="play-btn" data-id="${sound.id}">▶</button>
-                        <div class="audio-controls">
-                            <span class="time">0:00</span>
-                            <input type="range" min="0" max="1" step="0.001" value="0" />
-                            <span class="duration">0:00</span>
-                        </div>
                     </div>
                 `;
             });
             grid.innerHTML = html;
+
+            // Attach click handler to each card – opens Creator Store in new tab
             grid.querySelectorAll('.sound-card').forEach(card => {
                 const id = parseInt(card.dataset.id);
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('.play-btn')) return;
-                    if (e.ctrlKey || e.metaKey) {
-                        window.open(`https://create.roblox.com/store/asset/${id}`, '_blank');
-                        return;
-                    }
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(id.toString()).then(() => {
-                            card.style.borderColor = '#4CAF50';
-                            setTimeout(() => card.style.borderColor = '', 300);
-                        }).catch(() => {});
-                    } else {
-                        const textarea = document.createElement('textarea');
-                        textarea.value = id;
-                        document.body.appendChild(textarea);
-                        textarea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textarea);
-                        card.style.borderColor = '#4CAF50';
-                        setTimeout(() => card.style.borderColor = '', 300);
-                    }
+                card.addEventListener('click', () => {
+                    window.open(`https://create.roblox.com/store/asset/${id}`, '_blank');
                 });
-                const playBtn = card.querySelector('.play-btn');
-                playBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    togglePlay(card, id);
-                });
-            });
-        }
-
-        // ---------- togglePlay – dedicated Audio per click ----------
-        function togglePlay(card, id) {
-            const playBtn = card.querySelector('.play-btn');
-            const controls = card.querySelector('.audio-controls');
-            const range = controls.querySelector('input[type="range"]');
-            const timeSpan = controls.querySelector('.time');
-            const durationSpan = controls.querySelector('.duration');
-
-            // Pause if already playing this card
-            if (currentCard === card && currentAudio && !currentAudio.paused) {
-                currentAudio.pause();
-                playBtn.textContent = '▶';
-                playBtn.classList.remove('playing');
-                controls.classList.remove('visible');
-                currentAudio = null;
-                currentCard = null;
-                currentId = null;
-                return;
-            }
-
-            // Stop any other playing sound
-            if (currentAudio) {
-                const oldBtn = currentCard.querySelector('.play-btn');
-                const oldControls = currentCard.querySelector('.audio-controls');
-                currentAudio.pause();
-                oldBtn.textContent = '▶';
-                oldBtn.classList.remove('playing');
-                oldControls.classList.remove('visible');
-                currentAudio = null;
-                currentCard = null;
-                currentId = null;
-            }
-
-            // Create new Audio with your Worker URL
-            const audio = new Audio();
-            const url = PROXY_URL + id;
-            audio.src = url;
-
-            currentAudio = audio;
-            currentCard = card;
-            currentId = id;
-
-            audio.play().then(() => {
-                playBtn.textContent = '⏸';
-                playBtn.classList.add('playing');
-                controls.classList.add('visible');
-
-                const onTimeUpdate = () => {
-                    if (audio.duration && !isNaN(audio.duration)) {
-                        const current = audio.currentTime;
-                        const dur = audio.duration;
-                        range.value = current / dur;
-                        timeSpan.textContent = formatTime(current);
-                        durationSpan.textContent = formatTime(dur);
-                    }
-                };
-                const onLoadedMetadata = () => {
-                    if (audio.duration && !isNaN(audio.duration)) {
-                        durationSpan.textContent = formatTime(audio.duration);
-                        range.max = 1;
-                        range.value = 0;
-                    }
-                };
-                const onEnded = () => {
-                    playBtn.textContent = '▶';
-                    playBtn.classList.remove('playing');
-                    controls.classList.remove('visible');
-                    if (currentAudio === audio) {
-                        currentAudio = null;
-                        currentCard = null;
-                        currentId = null;
-                    }
-                    audio.removeEventListener('timeupdate', onTimeUpdate);
-                    audio.removeEventListener('loadedmetadata', onLoadedMetadata);
-                    audio.removeEventListener('ended', onEnded);
-                };
-
-                audio.addEventListener('timeupdate', onTimeUpdate);
-                audio.addEventListener('loadedmetadata', onLoadedMetadata);
-                audio.addEventListener('ended', onEnded);
-
-                range.oninput = () => {
-                    if (audio.duration) {
-                        audio.currentTime = parseFloat(range.value) * audio.duration;
-                    }
-                };
-                range.onchange = () => {
-                    if (audio.duration) {
-                        audio.currentTime = parseFloat(range.value) * audio.duration;
-                    }
-                };
-            }).catch(err => {
-                console.warn('Playback failed:', err);
-                alert('⚠️ This sound could not be previewed. It may be private, pending, or the ID is invalid.');
-                playBtn.textContent = '▶';
-                playBtn.classList.remove('playing');
-                controls.classList.remove('visible');
-                if (currentAudio === audio) {
-                    currentAudio = null;
-                    currentCard = null;
-                    currentId = null;
-                }
             });
         }
 
@@ -566,13 +348,7 @@
                 .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
 
-        function formatTime(seconds) {
-            if (!seconds || isNaN(seconds)) return '0:00';
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            return `${m}:${s.toString().padStart(2, '0')}`;
-        }
-
+        // ---------- Event listeners for filters ----------
         document.getElementById('keyword-input').addEventListener('input', render);
         document.getElementById('category-select').addEventListener('change', render);
         document.getElementById('clear-tags').addEventListener('click', () => {
@@ -580,6 +356,7 @@
             render();
         });
 
+        // ---------- Start ----------
         loadData();
     </script>
 </body>
