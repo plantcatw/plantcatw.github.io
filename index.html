@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roblox Sound Finder</title>
+    <style>
+        /* ---------- Global dark theme ---------- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+        }
+        #app {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ---------- Info box (editable tips) ---------- */
+        #info-tips {
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            color: #aaa;
+            line-height: 1.5;
+            user-select: text;
+        }
+        #info-tips strong {
+            color: #66BB6A;
+        }
+
+        /* ---------- Fixed search bar ---------- */
+        #search-bar {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 16px;
+            border: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+        #search-bar input,
+        #search-bar select {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #eee;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        #search-bar input:focus,
+        #search-bar select:focus {
+            border-color: #4CAF50;
+        }
+        #search-bar input {
+            flex: 2;
+            min-width: 150px;
+        }
+        #search-bar select {
+            flex: 0 1 auto;
+            min-width: 100px;
+        }
+        .tag-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            flex: 1 1 100%;
+        }
+        .tag-filter span {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-right: 4px;
+        }
+        .tag-chip {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 20px;
+            padding: 2px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            user-select: none;
+        }
+        .tag-chip.active {
+            background: #4CAF50;
+            border-color: #66BB6A;
+            color: #fff;
+        }
+        .tag-chip:hover {
+            background: #3a3a3a;
+        }
+        .tag-chip.active:hover {
+            background: #66BB6A;
+        }
+        #clear-tags {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-decoration: underline;
+            padding: 0 6px;
+        }
+        #clear-tags:hover {
+            color: #ccc;
+        }
+
+        /* ---------- Grid of sounds ---------- */
+        #sound-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            padding-bottom: 20px;
+        }
+
+        /* ---------- Sound card ---------- */
+        .sound-card {
+            background: #161616;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 10px 12px 10px 12px;
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+        .sound-card:hover {
+            border-color: #4CAF50;
+            background: #1e1e1e;
+        }
+        .sound-card .title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-right: 30px;
+        }
+        .sound-card .creator {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        .sound-card .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 8px;
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 2px;
+        }
+        .sound-card .meta .category {
+            background: #2a2a2a;
+            padding: 0 8px;
+            border-radius: 12px;
+            color: #bbb;
+        }
+        .sound-card .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .sound-card .tags .tag {
+            background: #222;
+            padding: 0 6px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            color: #999;
+        }
+        .play-btn {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: #4CAF50;
+            color: #fff;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .play-btn:hover {
+            background: #66BB6A;
+            transform: scale(1.05);
+        }
+        .play-btn.playing {
+            background: #d32f2f;
+        }
+        .play-btn.playing:hover {
+            background: #f44336;
+        }
+
+        .audio-controls {
+            display: none;
+            width: 100%;
+            margin-top: 4px;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: #aaa;
+            box-sizing: border-box;
+            padding: 0 2px;
+        }
+        .audio-controls.visible {
+            display: flex;
+        }
+        .audio-controls input[type="range"] {
+            flex: 1;
+            min-width: 0;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            appearance: none;
+            outline: none;
+            cursor: pointer;
+        }
+        .audio-controls input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+        .audio-controls input[type="range"]::-moz-range-thumb {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+        }
+        .audio-controls .time {
+            min-width: 70px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .audio-controls .duration {
+            min-width: 40px;
+            flex-shrink: 0;
+        }
+
+        #no-results {
+            text-align: center;
+            color: #666;
+            padding: 40px 0;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 600px) {
+            #search-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #search-bar input,
+            #search-bar select {
+                width: 100%;
+            }
+            .tag-filter {
+                flex-wrap: wrap;
+            }
+            #sound-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 400px) {
+            #sound-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="info-tips">
+            💡 <strong>Tips:</strong> Click any sound card to copy its ID to clipboard.
+            <strong>Ctrl+Click</strong> (or Cmd+Click) to open the Roblox store page.
+            Click the green <strong>▶</strong> button to preview the audio.
+        </div>
+
+        <div id="search-bar">
+            <input type="text" id="keyword-input" placeholder="Search name or creator..." />
+            <select id="category-select">
+                <option value="">All categories</option>
+            </select>
+            <div class="tag-filter">
+                <span>Tags:</span>
+                <div id="tag-chips"></div>
+                <button id="clear-tags">Clear</button>
+            </div>
+        </div>
+
+        <div id="sound-grid"></div>
+        <div id="no-results" style="display:none;">No sounds match your filters.</div>
+    </div>
+
+    <script>
+        const audio = new Audio();
+        let currentCard = null;
+        let currentId = null;
+
+        let allSounds = [];
+        let tagSet = new Set();
+
+        async function loadData() {
+            try {
+                const resp = await fetch('sounds.json');
+                if (!resp.ok) throw new Error('Failed to load sounds.json');
+                allSounds = await resp.json();
+                allSounds.forEach(s => {
+                    if (s.tags && Array.isArray(s.tags)) {
+                        s.tags.forEach(t => tagSet.add(t));
+                    }
+                });
+                populateFilters();
+                render();
+            } catch (e) {
+                document.getElementById('sound-grid').innerHTML =
+                    `<div style="color:#a44;">⚠️ Could not load sounds.json. Make sure the file exists and is valid JSON.</div>`;
+                console.error(e);
+            }
+        }
+
+        function populateFilters() {
+            const catSelect = document.getElementById('category-select');
+            const categories = [...new Set(allSounds.map(s => s.category).filter(Boolean))];
+            categories.sort();
+            categories.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                catSelect.appendChild(opt);
+            });
+
+            const chipContainer = document.getElementById('tag-chips');
+            const sortedTags = [...tagSet].sort();
+            sortedTags.forEach(tag => {
+                const chip = document.createElement('span');
+                chip.className = 'tag-chip';
+                chip.dataset.tag = tag;
+                chip.textContent = tag;
+                chip.addEventListener('click', () => {
+                    chip.classList.toggle('active');
+                    render();
+                });
+                chipContainer.appendChild(chip);
+            });
+        }
+
+        function getActiveTags() {
+            const chips = document.querySelectorAll('.tag-chip.active');
+            return Array.from(chips).map(c => c.dataset.tag);
+        }
+
+        function getFilteredSounds() {
+            const keyword = document.getElementById('keyword-input').value.trim().toLowerCase();
+            const category = document.getElementById('category-select').value;
+            const activeTags = getActiveTags();
+
+            return allSounds.filter(sound => {
+                if (keyword) {
+                    const nameMatch = sound.name && sound.name.toLowerCase().includes(keyword);
+                    const creatorMatch = sound.creator && sound.creator.toLowerCase().includes(keyword);
+                    if (!nameMatch && !creatorMatch) return false;
+                }
+                if (category && sound.category !== category) return false;
+                if (activeTags.length > 0) {
+                    if (!sound.tags || !Array.isArray(sound.tags)) return false;
+                    for (let t of activeTags) {
+                        if (!sound.tags.includes(t)) return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        function render() {
+            const grid = document.getElementById('sound-grid');
+            const noResults = document.getElementById('no-results');
+            const filtered = getFilteredSounds();
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+            noResults.style.display = 'none';
+
+            let html = '';
+            filtered.forEach(sound => {
+                const tagsHtml = (sound.tags && Array.isArray(sound.tags)) ?
+                    sound.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('') :
+                    '';
+                const categoryHtml = sound.category ? `<span class="category">${escapeHtml(sound.category)}</span>` : '';
+                html += `
+                    <div class="sound-card" data-id="${sound.id}" data-name="${escapeHtml(sound.name || '')}" data-creator="${escapeHtml(sound.creator || '')}">
+                        <div class="title">${escapeHtml(sound.name || 'Unnamed')}</div>
+                        <div class="creator">${escapeHtml(sound.creator || 'Unknown creator')}</div>
+                        <div class="meta">
+                            ${categoryHtml}
+                            <div class="tags">${tagsHtml}</div>
+                        </div>
+                        <button class="play-btn" data-id="${sound.id}">▶</button>
+                        <div class="audio-controls">
+                            <span class="time">0:00</span>
+                            <input type="range" min="0" max="1" step="0.001" value="0" />
+                            <span class="duration">0:00</span>
+                        </div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+
+            grid.querySelectorAll('.sound-card').forEach(card => {
+                const id = parseInt(card.dataset.id);
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.play-btn')) return;
+                    if (e.ctrlKey || e.metaKey) {
+                        window.open(`https://create.roblox.com/store/asset/${id}`, '_blank');
+                        return;
+                    }
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(id.toString()).then(() => {
+                            card.style.borderColor = '#4CAF50';
+                            setTimeout(() => card.style.borderColor = '', 300);
+                        }).catch(() => {});
+                    } else {
+                        const textarea = document.createElement('textarea');
+                        textarea.value = id;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        card.style.borderColor = '#4CAF50';
+                        setTimeout(() => card.style.borderColor = '', 300);
+                    }
+                });
+
+                const playBtn = card.querySelector('.play-btn');
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    togglePlay(card, id);
+                });
+            });
+        }
+
+        // ---------- FIXED: use original URL with crossOrigin ----------
+        function togglePlay(card, id) {
+            const playBtn = card.querySelector('.play-btn');
+            const controls = card.querySelector('.audio-controls');
+            const range = controls.querySelector('input[type="range"]');
+            const timeSpan = controls.querySelector('.time');
+            const durationSpan = controls.querySelector('.duration');
+
+            if (currentCard === card && !audio.paused) {
+                audio.pause();
+                playBtn.textContent = '▶';
+                playBtn.classList.remove('playing');
+                controls.classList.remove('visible');
+                currentCard = null;
+                currentId = null;
+                return;
+            }
+
+            if (currentCard) {
+                const oldBtn = currentCard.querySelector('.play-btn');
+                const oldControls = currentCard.querySelector('.audio-controls');
+                audio.pause();
+                oldBtn.textContent = '▶';
+                oldBtn.classList.remove('playing');
+                oldControls.classList.remove('visible');
+            }
+
+            // Use the original, CORS-friendly URL
+            const url = `https://www.roblox.com/asset/?id=${id}`;
+            audio.crossOrigin = "anonymous";
+            audio.src = url;
+
+            audio.play().then(() => {
+                playBtn.textContent = '⏸';
+                playBtn.classList.add('playing');
+                controls.classList.add('visible');
+                currentCard = card;
+                currentId = id;
+
+                const onTimeUpdate = () => {
+                    if (audio.duration && !isNaN(audio.duration)) {
+                        const current = audio.currentTime;
+                        const dur = audio.duration;
+                        range.value = current / dur;
+                        timeSpan.textContent = formatTime(current);
+                        durationSpan.textContent = formatTime(dur);
+                    }
+                };
+                const onLoadedMetadata = () => {
+                    if (audio.duration && !isNaN(audio.duration)) {
+                        durationSpan.textContent = formatTime(audio.duration);
+                        range.max = 1;
+                        range.value = 0;
+                    }
+                };
+                const onEnded = () => {
+                    playBtn.textContent = '▶';
+                    playBtn.classList.remove('playing');
+                    controls.classList.remove('visible');
+                    currentCard = null;
+                    currentId = null;
+                    audio.removeEventListener('timeupdate', onTimeUpdate);
+                    audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+                    audio.removeEventListener('ended', onEnded);
+                };
+
+                audio.removeEventListener('timeupdate', onTimeUpdate);
+                audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+                audio.removeEventListener('ended', onEnded);
+                audio.addEventListener('timeupdate', onTimeUpdate);
+                audio.addEventListener('loadedmetadata', onLoadedMetadata);
+                audio.addEventListener('ended', onEnded);
+
+                range.oninput = () => {
+                    if (audio.duration) {
+                        audio.currentTime = parseFloat(range.value) * audio.duration;
+                    }
+                };
+                range.onchange = () => {
+                    if (audio.duration) {
+                        audio.currentTime = parseFloat(range.value) * audio.duration;
+                    }
+                };
+            }).catch(err => {
+                console.warn('Playback failed:', err);
+                alert('⚠️ This sound could not be previewed. It may be private, pending, or the ID is invalid.');
+                playBtn.textContent = '▶';
+                playBtn.classList.remove('playing');
+                controls.classList.remove('visible');
+                currentCard = null;
+                currentId = null;
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        document.getElementById('keyword-input').addEventListener('input', render);
+        document.getElementById('category-select').addEventListener('change', render);
+        document.getElementById('clear-tags').addEventListener('click', () => {
+            document.querySelectorAll('.tag-chip.active').forEach(c => c.classList.remove('active'));
+            render();
+        });
+
+        loadData();
+    </script>
+</body>
+</html>
