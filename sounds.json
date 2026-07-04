@@ -1,9 +1,65 @@
 [
 	{
         "id": 72707986446841,
+        "name": "bloody impact hit",
+        "creator": "test2",
+        "category": "Generic",
+        "tags": ["Impact", "Blood"]
+    },
+    {
+        "id": 72707986446841,
+        "name": "fall of stairs and blood fountain",
+        "creator": "test",
+        "category": "Generic",
+        "tags": ["Blood", "Ragdoll"]
+    },
+    {
+        "id": 72707986446841,
         "name": "combat_melee_hit2METAL",
-        "creator": "KaioCesarR",
+        "creator": "test",
         "category": "Generic",
         "tags": ["Impact"]
+    },
+    {
+        "id": 72707986446841,
+        "name": "combat_melee_hit2METAL",
+        "creator": "test2",
+        "category": "Generic",
+        "tags": ["Explosion", "Impact"]
+    },
+    {
+        "id": 72707986446841,
+        "name": "combat_melee_hit2METAL",
+        "creator": "test3",
+        "category": "Generic",
+        "tags": ["Impact", "Misc"]
+    },
+    {
+        "id": 72707986446841,
+        "name": "combat_melee_hit2METAL",
+        "creator": "test",
+        "category": "Generic",
+        "tags": ["Misc"]
+    },
+    {
+        "id": 72707986446841,
+        "name": "combat_melee_hit2METAL",
+        "creator": "test2",
+        "category": "Magic",
+        "tags": ["Misc", "Explosion"]
+    },
+    {
+        "id": 72707986446841,
+        "name": "boom",
+        "creator": "test3",
+        "category": "Magic",
+        "tags": ["Explosion"]
+    },
+    {
+        "id": 72707986446841,
+        "name": "fire",
+        "creator": "test",
+        "category": "Magic",
+        "tags": ["Fire (magical)"]
     }
 ]
