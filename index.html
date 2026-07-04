@@ -4,14 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Roblox Sound Finder</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <style>
-        /* ---------- Global dark theme ---------- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             background: #0a0a0a;
             color: #e0e0e0;
@@ -22,15 +16,7 @@
             margin: 0;
             padding: 16px;
         }
-        #app {
-            max-width: 1200px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        /* ---------- Info box (editable tips) ---------- */
+        #app { max-width: 1200px; width: 100%; display: flex; flex-direction: column; gap: 12px; }
         #info-tips {
             background: #141414;
             border: 1px solid #2a2a2a;
@@ -39,13 +25,8 @@
             font-size: 0.85rem;
             color: #aaa;
             line-height: 1.5;
-            user-select: text;
         }
-        #info-tips strong {
-            color: #66BB6A;
-        }
-
-        /* ---------- Fixed search bar ---------- */
+        #info-tips strong { color: #66BB6A; }
         #search-bar {
             background: #1a1a1a;
             border-radius: 12px;
@@ -60,8 +41,7 @@
             z-index: 10;
             box-shadow: 0 4px 12px rgba(0,0,0,0.8);
         }
-        #search-bar input,
-        #search-bar select {
+        #search-bar input, #search-bar select {
             background: #2a2a2a;
             border: 1px solid #444;
             color: #eee;
@@ -70,18 +50,9 @@
             font-size: 0.9rem;
             outline: none;
         }
-        #search-bar input:focus,
-        #search-bar select:focus {
-            border-color: #4CAF50;
-        }
-        #search-bar input {
-            flex: 2;
-            min-width: 150px;
-        }
-        #search-bar select {
-            flex: 0 1 auto;
-            min-width: 100px;
-        }
+        #search-bar input:focus, #search-bar select:focus { border-color: #4CAF50; }
+        #search-bar input { flex: 2; min-width: 150px; }
+        #search-bar select { flex: 0 1 auto; min-width: 100px; }
         .tag-filter {
             display: flex;
             flex-wrap: wrap;
@@ -89,11 +60,7 @@
             align-items: center;
             flex: 1 1 100%;
         }
-        .tag-filter span {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-right: 4px;
-        }
+        .tag-filter span { font-size: 0.8rem; color: #aaa; margin-right: 4px; }
         .tag-chip {
             background: #2a2a2a;
             border: 1px solid #444;
@@ -104,17 +71,9 @@
             transition: 0.2s;
             user-select: none;
         }
-        .tag-chip.active {
-            background: #4CAF50;
-            border-color: #66BB6A;
-            color: #fff;
-        }
-        .tag-chip:hover {
-            background: #3a3a3a;
-        }
-        .tag-chip.active:hover {
-            background: #66BB6A;
-        }
+        .tag-chip.active { background: #4CAF50; border-color: #66BB6A; color: #fff; }
+        .tag-chip:hover { background: #3a3a3a; }
+        .tag-chip.active:hover { background: #66BB6A; }
         #clear-tags {
             background: none;
             border: none;
@@ -124,24 +83,18 @@
             text-decoration: underline;
             padding: 0 6px;
         }
-        #clear-tags:hover {
-            color: #ccc;
-        }
-
-        /* ---------- Grid of sounds ---------- */
+        #clear-tags:hover { color: #ccc; }
         #sound-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 12px;
             padding-bottom: 20px;
         }
-
-        /* ---------- Sound card ---------- */
         .sound-card {
             background: #161616;
             border: 1px solid #2a2a2a;
             border-radius: 10px;
-            padding: 10px 12px 10px 12px;
+            padding: 10px 12px;
             cursor: pointer;
             transition: 0.15s;
             display: flex;
@@ -150,19 +103,9 @@
             position: relative;
             overflow: hidden;
         }
-        .sound-card:hover {
-            border-color: #4CAF50;
-            background: #1e1e1e;
-        }
-        .sound-card .title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-right: 30px;
-        }
-        .sound-card .creator {
-            font-size: 0.8rem;
-            color: #aaa;
-        }
+        .sound-card:hover { border-color: #4CAF50; background: #1e1e1e; }
+        .sound-card .title { font-weight: 600; font-size: 0.95rem; margin-right: 30px; }
+        .sound-card .creator { font-size: 0.8rem; color: #aaa; }
         .sound-card .meta {
             display: flex;
             flex-wrap: wrap;
@@ -177,11 +120,7 @@
             border-radius: 12px;
             color: #bbb;
         }
-        .sound-card .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
+        .sound-card .tags { display: flex; flex-wrap: wrap; gap: 4px; }
         .sound-card .tags .tag {
             background: #222;
             padding: 0 6px;
@@ -207,17 +146,9 @@
             justify-content: center;
             transition: 0.2s;
         }
-        .play-btn:hover {
-            background: #66BB6A;
-            transform: scale(1.05);
-        }
-        .play-btn.playing {
-            background: #d32f2f;
-        }
-        .play-btn.playing:hover {
-            background: #f44336;
-        }
-
+        .play-btn:hover { background: #66BB6A; transform: scale(1.05); }
+        .play-btn.playing { background: #d32f2f; }
+        .play-btn.playing:hover { background: #f44336; }
         .audio-controls {
             display: none;
             width: 100%;
@@ -229,9 +160,7 @@
             box-sizing: border-box;
             padding: 0 2px;
         }
-        .audio-controls.visible {
-            display: flex;
-        }
+        .audio-controls.visible { display: flex; }
         .audio-controls input[type="range"] {
             flex: 1;
             min-width: 0;
@@ -258,87 +187,58 @@
             cursor: pointer;
             border: none;
         }
-        .audio-controls .time {
-            min-width: 70px;
-            text-align: right;
-            flex-shrink: 0;
-        }
-        .audio-controls .duration {
-            min-width: 40px;
-            flex-shrink: 0;
-        }
-
-        #no-results {
-            text-align: center;
-            color: #666;
-            padding: 40px 0;
-            font-size: 1.1rem;
-        }
-
+        .audio-controls .time { min-width: 70px; text-align: right; flex-shrink: 0; }
+        .audio-controls .duration { min-width: 40px; flex-shrink: 0; }
+        #no-results { text-align: center; color: #666; padding: 40px 0; font-size: 1.1rem; }
         @media (max-width: 600px) {
-            #search-bar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            #search-bar input,
-            #search-bar select {
-                width: 100%;
-            }
-            .tag-filter {
-                flex-wrap: wrap;
-            }
-            #sound-grid {
-                grid-template-columns: 1fr 1fr;
-            }
+            #search-bar { flex-direction: column; align-items: stretch; }
+            #search-bar input, #search-bar select { width: 100%; }
+            .tag-filter { flex-wrap: wrap; }
+            #sound-grid { grid-template-columns: 1fr 1fr; }
         }
-        @media (max-width: 400px) {
-            #sound-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 400px) { #sound-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="info-tips">
-            💡 <strong>Tips:</strong> Click any sound card to copy its ID to clipboard.
-            <strong>Ctrl+Click</strong> (or Cmd+Click) to open the Roblox store page.
-            Click the green <strong>▶</strong> button to preview the audio.
+            💡 <strong>Tips:</strong> Click any sound card to copy its ID. <strong>Ctrl+Click</strong> to open store. Click <strong>▶</strong> to preview.
         </div>
-
         <div id="search-bar">
             <input type="text" id="keyword-input" placeholder="Search name or creator..." />
-            <select id="category-select">
-                <option value="">All categories</option>
-            </select>
+            <select id="category-select"><option value="">All categories</option></select>
             <div class="tag-filter">
                 <span>Tags:</span>
                 <div id="tag-chips"></div>
                 <button id="clear-tags">Clear</button>
             </div>
         </div>
-
         <div id="sound-grid"></div>
         <div id="no-results" style="display:none;">No sounds match your filters.</div>
     </div>
-
     <script>
-        const audio = new Audio();
+        // ---------- Global state ----------
+        let currentAudio = null;
         let currentCard = null;
         let currentId = null;
 
         let allSounds = [];
         let tagSet = new Set();
 
+        // ---------- Proxy URL (more reliable than allorigins) ----------
+        function getProxyUrl(id) {
+            // corsproxy.io is more consistent
+            return `https://corsproxy.io/?url=${encodeURIComponent('https://www.roblox.com/asset/?id=' + id)}`;
+        }
+
+        // ---------- Load data ----------
         async function loadData() {
             try {
                 const resp = await fetch('sounds.json');
                 if (!resp.ok) throw new Error('Failed to load sounds.json');
                 allSounds = await resp.json();
                 allSounds.forEach(s => {
-                    if (s.tags && Array.isArray(s.tags)) {
-                        s.tags.forEach(t => tagSet.add(t));
-                    }
+                    if (s.tags && Array.isArray(s.tags)) s.tags.forEach(t => tagSet.add(t));
                 });
                 populateFilters();
                 render();
@@ -359,7 +259,6 @@
                 opt.textContent = c;
                 catSelect.appendChild(opt);
             });
-
             const chipContainer = document.getElementById('tag-chips');
             const sortedTags = [...tagSet].sort();
             sortedTags.forEach(tag => {
@@ -384,7 +283,6 @@
             const keyword = document.getElementById('keyword-input').value.trim().toLowerCase();
             const category = document.getElementById('category-select').value;
             const activeTags = getActiveTags();
-
             return allSounds.filter(sound => {
                 if (keyword) {
                     const nameMatch = sound.name && sound.name.toLowerCase().includes(keyword);
@@ -406,14 +304,12 @@
             const grid = document.getElementById('sound-grid');
             const noResults = document.getElementById('no-results');
             const filtered = getFilteredSounds();
-
             if (filtered.length === 0) {
                 grid.innerHTML = '';
                 noResults.style.display = 'block';
                 return;
             }
             noResults.style.display = 'none';
-
             let html = '';
             filtered.forEach(sound => {
                 const tagsHtml = (sound.tags && Array.isArray(sound.tags)) ?
@@ -424,10 +320,7 @@
                     <div class="sound-card" data-id="${sound.id}" data-name="${escapeHtml(sound.name || '')}" data-creator="${escapeHtml(sound.creator || '')}">
                         <div class="title">${escapeHtml(sound.name || 'Unnamed')}</div>
                         <div class="creator">${escapeHtml(sound.creator || 'Unknown creator')}</div>
-                        <div class="meta">
-                            ${categoryHtml}
-                            <div class="tags">${tagsHtml}</div>
-                        </div>
+                        <div class="meta">${categoryHtml}<div class="tags">${tagsHtml}</div></div>
                         <button class="play-btn" data-id="${sound.id}">▶</button>
                         <div class="audio-controls">
                             <span class="time">0:00</span>
@@ -438,7 +331,6 @@
                 `;
             });
             grid.innerHTML = html;
-
             grid.querySelectorAll('.sound-card').forEach(card => {
                 const id = parseInt(card.dataset.id);
                 card.addEventListener('click', (e) => {
@@ -463,7 +355,6 @@
                         setTimeout(() => card.style.borderColor = '', 300);
                     }
                 });
-
                 const playBtn = card.querySelector('.play-btn');
                 playBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -472,7 +363,7 @@
             });
         }
 
-        // ---------- FIXED: use original URL with crossOrigin ----------
+        // ---------- togglePlay – dedicated Audio ----------
         function togglePlay(card, id) {
             const playBtn = card.querySelector('.play-btn');
             const controls = card.querySelector('.audio-controls');
@@ -480,36 +371,44 @@
             const timeSpan = controls.querySelector('.time');
             const durationSpan = controls.querySelector('.duration');
 
-            if (currentCard === card && !audio.paused) {
-                audio.pause();
+            // Pause if already playing this card
+            if (currentCard === card && currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
                 playBtn.textContent = '▶';
                 playBtn.classList.remove('playing');
                 controls.classList.remove('visible');
+                currentAudio = null;
                 currentCard = null;
                 currentId = null;
                 return;
             }
 
-            if (currentCard) {
+            // Stop any other playing sound
+            if (currentAudio) {
                 const oldBtn = currentCard.querySelector('.play-btn');
                 const oldControls = currentCard.querySelector('.audio-controls');
-                audio.pause();
+                currentAudio.pause();
                 oldBtn.textContent = '▶';
                 oldBtn.classList.remove('playing');
                 oldControls.classList.remove('visible');
+                currentAudio = null;
+                currentCard = null;
+                currentId = null;
             }
 
-            // Use the original, CORS-friendly URL
-            const url = `https://www.roblox.com/asset/?id=${id}`;
-            audio.crossOrigin = "anonymous";
-            audio.src = url;
+            // Create new Audio with proxy URL
+            const audio = new Audio();
+            const PROXY_URL = 'https://plantaudioworker.workers.dev/?id=';
+            audio.src = proxyUrl;
+
+            currentAudio = audio;
+            currentCard = card;
+            currentId = id;
 
             audio.play().then(() => {
                 playBtn.textContent = '⏸';
                 playBtn.classList.add('playing');
                 controls.classList.add('visible');
-                currentCard = card;
-                currentId = id;
 
                 const onTimeUpdate = () => {
                     if (audio.duration && !isNaN(audio.duration)) {
@@ -531,16 +430,16 @@
                     playBtn.textContent = '▶';
                     playBtn.classList.remove('playing');
                     controls.classList.remove('visible');
-                    currentCard = null;
-                    currentId = null;
+                    if (currentAudio === audio) {
+                        currentAudio = null;
+                        currentCard = null;
+                        currentId = null;
+                    }
                     audio.removeEventListener('timeupdate', onTimeUpdate);
                     audio.removeEventListener('loadedmetadata', onLoadedMetadata);
                     audio.removeEventListener('ended', onEnded);
                 };
 
-                audio.removeEventListener('timeupdate', onTimeUpdate);
-                audio.removeEventListener('loadedmetadata', onLoadedMetadata);
-                audio.removeEventListener('ended', onEnded);
                 audio.addEventListener('timeupdate', onTimeUpdate);
                 audio.addEventListener('loadedmetadata', onLoadedMetadata);
                 audio.addEventListener('ended', onEnded);
@@ -561,8 +460,11 @@
                 playBtn.textContent = '▶';
                 playBtn.classList.remove('playing');
                 controls.classList.remove('visible');
-                currentCard = null;
-                currentId = null;
+                if (currentAudio === audio) {
+                    currentAudio = null;
+                    currentCard = null;
+                    currentId = null;
+                }
             });
         }
 
