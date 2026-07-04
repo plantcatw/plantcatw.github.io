@@ -51,6 +51,25 @@
             font-size: 0.75rem;
             color: #ccc;
         }
+        .tag-example {
+            display: inline-block;
+            background: #4CAF50;
+            color: #fff;
+            padding: 0 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin: 0 2px;
+        }
+        .tag-exclude-example {
+            display: inline-block;
+            background: #d32f2f;
+            color: #fff;
+            padding: 0 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin: 0 2px;
+            text-decoration: line-through;
+        }
 
         /* ---------- Discord section ---------- */
         #discord-section {
@@ -125,19 +144,33 @@
             flex: 0 1 auto;
             min-width: 100px;
         }
-        .tag-filter {
+
+        /* ---------- Tag groups (below search bar) ---------- */
+        #tag-groups {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .tag-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
             align-items: center;
-            flex: 1 1 100%;
+            gap: 4px 8px;
         }
-        .tag-filter span {
-            font-size: 0.8rem;
-            color: #aaa;
+        .tag-group .group-name {
+            font-size: 0.7rem;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 60px;
             margin-right: 4px;
         }
-        .tag-chip {
+        .tag-group .tag-chip {
             background: #2a2a2a;
             border: 1px solid #444;
             border-radius: 20px;
@@ -147,16 +180,32 @@
             transition: 0.2s;
             user-select: none;
         }
-        .tag-chip.active {
+        .tag-group .tag-chip:hover {
+            background: #3a3a3a;
+        }
+        .tag-group .tag-chip.include {
             background: #4CAF50;
             border-color: #66BB6A;
             color: #fff;
         }
-        .tag-chip:hover {
-            background: #3a3a3a;
-        }
-        .tag-chip.active:hover {
+        .tag-group .tag-chip.include:hover {
             background: #66BB6A;
+        }
+        .tag-group .tag-chip.exclude {
+            background: #d32f2f;
+            border-color: #f44336;
+            color: #fff;
+            text-decoration: line-through;
+        }
+        .tag-group .tag-chip.exclude:hover {
+            background: #f44336;
+        }
+
+        /* Clear all button - left aligned */
+        #clear-tags-wrapper {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 4px;
         }
         #clear-tags {
             background: none;
@@ -165,7 +214,7 @@
             cursor: pointer;
             font-size: 0.8rem;
             text-decoration: underline;
-            padding: 0 6px;
+            padding: 4px 6px;
         }
         #clear-tags:hover {
             color: #ccc;
@@ -270,9 +319,6 @@
             #search-bar select {
                 width: 100%;
             }
-            .tag-filter {
-                flex-wrap: wrap;
-            }
             #sound-grid {
                 grid-template-columns: 1fr 1fr;
             }
@@ -283,6 +329,12 @@
             }
             #discord-section .invite-link {
                 justify-content: center;
+            }
+            .tag-group .group-name {
+                min-width: 100%;
+            }
+            #clear-tags-wrapper {
+                justify-content: flex-start;
             }
         }
         @media (max-width: 400px) {
@@ -296,17 +348,19 @@
     <div id="app">
         <!-- Info / Tips -->
         <div id="info-tips">
-            💡 <strong>How to use:</strong> Click any sound card to open it in the 
-            <strong>Creator Store</strong> (make sure you're logged into Roblox). 
-            Hold <kbd>Ctrl</kbd> (or <kbd>Cmd</kbd> on Mac) + click to <strong>copy the sound ID</strong> to your clipboard.
-            Use the search bar and tags to filter sounds.
+            💡 <strong>how to use:</strong> click a sound card to open it in the
+            <strong>creator store</strong> (make sure you're logged into roblox).
+            hold <kbd>ctrl</kbd> (or <kbd>cmd</kbd> on mac) + click to <strong>copy the sound id</strong>.
+            <br />
+            🏷️ <strong>tags:</strong> left-click to <span class="tag-example">include</span> | right-click to <span class="tag-exclude-example">exclude</span>.
+            use the search bar, category filter, and tag groups to narrow down results.
         </div>
 
         <!-- Discord section -->
         <div id="discord-section">
-            <span class="label">💬 <strong>Join my community server for skill builder help and other useful resources</strong></span>
+            <span class="label">💬 <strong>join my community server</strong> for skill builder help and other useful resources</span>
             <a href="https://discord.gg/cY3faJJt5M" target="_blank" class="invite-link">
-                <span>▶</span> Discord.gg/cY3faJJt5M
+                <span>🔗</span> discord.gg/cY3faJJt5M
             </a>
         </div>
 
@@ -316,26 +370,52 @@
             <select id="category-select">
                 <option value="">All categories</option>
             </select>
-            <div class="tag-filter">
-                <span>Tags:</span>
-                <div id="tag-chips"></div>
-                <button id="clear-tags">Clear</button>
-            </div>
         </div>
+
+        <!-- Tag groups -->
+        <div id="tag-groups"></div>
 
         <!-- Sound grid -->
         <div id="sound-grid"></div>
-        <div id="no-results" style="display:none;">No sounds match your filters.</div>
+        <div id="no-results" style="display:none;">no sounds match your filters.</div>
     </div>
 
     <!-- Copy notification -->
-    <div id="copy-notification">✅ Copied to clipboard!</div>
+    <div id="copy-notification">✅ copied to clipboard!</div>
 
     <script>
         // ---------- Global state ----------
         let allSounds = [];
-        let tagSet = new Set();
+        let tagSet = new Set(); // lowercase tags for existence check
+        let tagOriginalMap = {}; // lowercase -> original casing
         let copyTimeout = null;
+
+        // ---------- Tag state: each tag can be 'include', 'exclude', or null ----------
+        let tagStates = {};
+
+        // ---------- Tag group definitions (names capitalized) ----------
+        const tagGroups = [
+            {
+                name: 'Damage',
+                tags: ['blood', 'ragdoll', 'impact', 'stab/slice', 'punch', 'crush', 'slash']
+            },
+            {
+                name: 'Motion',
+                tags: ['footsteps', 'cloth', 'movement', 'swing', 'whoosh', 'landing', 'jump']
+            },
+            {
+                name: 'Elemental',
+                tags: ['steel', 'glass', 'explosion', 'water', 'fire', 'lightning', 'other (magical)']
+            },
+            {
+                name: 'Source',
+                tags: ['jjk', 'dbz', 'project moon', 'ut/dr', 'cartoons', 'animals', 'humor', 'anime', 'video games']
+            },
+            {
+                name: 'Meta',
+                tags: ['loop', 'pack', 'misc', 'layered', 'short', 'long']
+            }
+        ];
 
         // ---------- Load data ----------
         async function loadData() {
@@ -345,14 +425,24 @@
                 allSounds = await resp.json();
                 allSounds.forEach(s => {
                     if (s.tags && Array.isArray(s.tags)) {
-                        s.tags.forEach(t => tagSet.add(t));
+                        s.tags.forEach(t => {
+                            const lower = t.toLowerCase();
+                            tagSet.add(lower);
+                            // Store original casing (first occurrence)
+                            if (!tagOriginalMap[lower]) {
+                                tagOriginalMap[lower] = t;
+                            }
+                        });
                     }
                 });
+                // Initialize tag states for all tags
+                tagSet.forEach(t => { tagStates[t] = null; });
+                populateTagGroups();
                 populateFilters();
                 render();
             } catch (e) {
                 document.getElementById('sound-grid').innerHTML =
-                    `<div style="color:#a44;">⚠️ Could not load sounds.json. Make sure the file exists and is valid JSON.</div>`;
+                    `<div style="color:#a44;">⚠️ could not load sounds.json. make sure the file exists and is valid JSON.</div>`;
                 console.error(e);
             }
         }
@@ -364,44 +454,170 @@
             categories.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c;
-                opt.textContent = c;
+                opt.textContent = c; // preserve original casing
                 catSelect.appendChild(opt);
             });
-            const chipContainer = document.getElementById('tag-chips');
-            const sortedTags = [...tagSet].sort();
-            sortedTags.forEach(tag => {
-                const chip = document.createElement('span');
-                chip.className = 'tag-chip';
-                chip.dataset.tag = tag;
-                chip.textContent = tag;
-                chip.addEventListener('click', () => {
-                    chip.classList.toggle('active');
-                    render();
+        }
+
+        // ---------- Populate tag groups ----------
+        function populateTagGroups() {
+            const container = document.getElementById('tag-groups');
+            container.innerHTML = '';
+
+            // Clear all button (left aligned)
+            const clearWrapper = document.createElement('div');
+            clearWrapper.id = 'clear-tags-wrapper';
+            const clearBtn = document.createElement('button');
+            clearBtn.id = 'clear-tags';
+            clearBtn.textContent = 'Clear all tags';
+            clearBtn.addEventListener('click', () => {
+                Object.keys(tagStates).forEach(t => { tagStates[t] = null; });
+                updateTagChips();
+                render();
+            });
+            clearWrapper.appendChild(clearBtn);
+            container.appendChild(clearWrapper);
+
+            // Create each group
+            tagGroups.forEach(group => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'tag-group';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'group-name';
+                nameSpan.textContent = group.name; // already capitalized
+                groupDiv.appendChild(nameSpan);
+
+                // Only show tags that exist in the dataset
+                const existingTags = group.tags.filter(t => tagSet.has(t));
+                if (existingTags.length === 0) {
+                    return; // skip empty groups
+                }
+
+                existingTags.forEach(tagLower => {
+                    const chip = document.createElement('span');
+                    chip.className = 'tag-chip';
+                    chip.dataset.tag = tagLower; // store lowercase for state
+                    // Display original casing from map
+                    chip.textContent = tagOriginalMap[tagLower] || tagLower;
+
+                    // Left-click: include
+                    chip.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        toggleTagState(tagLower, 'include');
+                    });
+
+                    // Right-click: exclude
+                    chip.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        toggleTagState(tagLower, 'exclude');
+                    });
+
+                    groupDiv.appendChild(chip);
                 });
-                chipContainer.appendChild(chip);
+
+                container.appendChild(groupDiv);
+            });
+
+            // "Other" group for tags not in any group
+            const groupedTags = new Set();
+            tagGroups.forEach(g => g.tags.forEach(t => groupedTags.add(t)));
+            const ungroupedTags = [...tagSet].filter(t => !groupedTags.has(t));
+            if (ungroupedTags.length > 0) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'tag-group';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'group-name';
+                nameSpan.textContent = 'Other';
+                groupDiv.appendChild(nameSpan);
+
+                ungroupedTags.forEach(tagLower => {
+                    const chip = document.createElement('span');
+                    chip.className = 'tag-chip';
+                    chip.dataset.tag = tagLower;
+                    chip.textContent = tagOriginalMap[tagLower] || tagLower;
+
+                    chip.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        toggleTagState(tagLower, 'include');
+                    });
+                    chip.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        toggleTagState(tagLower, 'exclude');
+                    });
+
+                    groupDiv.appendChild(chip);
+                });
+
+                container.appendChild(groupDiv);
+            }
+        }
+
+        // ---------- Toggle tag state ----------
+        function toggleTagState(tag, newState) {
+            const current = tagStates[tag];
+            if (current === newState) {
+                tagStates[tag] = null;
+            } else {
+                tagStates[tag] = newState;
+            }
+            updateTagChips();
+            render();
+        }
+
+        function updateTagChips() {
+            const chips = document.querySelectorAll('.tag-chip');
+            chips.forEach(chip => {
+                const tag = chip.dataset.tag;
+                const state = tagStates[tag];
+                chip.classList.remove('include', 'exclude');
+                if (state === 'include') {
+                    chip.classList.add('include');
+                } else if (state === 'exclude') {
+                    chip.classList.add('exclude');
+                }
             });
         }
 
-        function getActiveTags() {
-            const chips = document.querySelectorAll('.tag-chip.active');
-            return Array.from(chips).map(c => c.dataset.tag);
+        function getActiveIncludeTags() {
+            return Object.keys(tagStates).filter(t => tagStates[t] === 'include');
         }
 
+        function getActiveExcludeTags() {
+            return Object.keys(tagStates).filter(t => tagStates[t] === 'exclude');
+        }
+
+        // ---------- Filtering ----------
         function getFilteredSounds() {
             const keyword = document.getElementById('keyword-input').value.trim().toLowerCase();
             const category = document.getElementById('category-select').value;
-            const activeTags = getActiveTags();
+            const includeTags = getActiveIncludeTags();
+            const excludeTags = getActiveExcludeTags();
+
             return allSounds.filter(sound => {
+                // Keyword: name or creator
                 if (keyword) {
                     const nameMatch = sound.name && sound.name.toLowerCase().includes(keyword);
                     const creatorMatch = sound.creator && sound.creator.toLowerCase().includes(keyword);
                     if (!nameMatch && !creatorMatch) return false;
                 }
+                // Category (exact match, case-sensitive)
                 if (category && sound.category !== category) return false;
-                if (activeTags.length > 0) {
+                // Include tags: must have ALL included tags
+                if (includeTags.length > 0) {
                     if (!sound.tags || !Array.isArray(sound.tags)) return false;
-                    for (let t of activeTags) {
-                        if (!sound.tags.includes(t)) return false;
+                    const soundTagsLower = sound.tags.map(t => t.toLowerCase());
+                    for (let t of includeTags) {
+                        if (!soundTagsLower.includes(t)) return false;
+                    }
+                }
+                // Exclude tags: must have NONE of the excluded tags
+                if (excludeTags.length > 0) {
+                    if (!sound.tags || !Array.isArray(sound.tags)) return true;
+                    const soundTagsLower = sound.tags.map(t => t.toLowerCase());
+                    for (let t of excludeTags) {
+                        if (soundTagsLower.includes(t)) return false;
                     }
                 }
                 return true;
@@ -424,7 +640,6 @@
                 navigator.clipboard.writeText(text).then(() => {
                     showCopyNotification();
                 }).catch(() => {
-                    // Fallback method
                     fallbackCopy(text);
                 });
             } else {
@@ -504,10 +719,6 @@
         // ---------- Event listeners for filters ----------
         document.getElementById('keyword-input').addEventListener('input', render);
         document.getElementById('category-select').addEventListener('change', render);
-        document.getElementById('clear-tags').addEventListener('click', () => {
-            document.querySelectorAll('.tag-chip.active').forEach(c => c.classList.remove('active'));
-            render();
-        });
 
         // ---------- Start ----------
         loadData();
