@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Force no cache on the page itself -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>plantcatw sound tags</title>
     <link rel="icon" type="image/png" href="/favicon.ico" />
     <style>
+        /* ---------- Styles (unchanged) ---------- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -29,7 +34,7 @@
             gap: 12px;
         }
 
-        /* ---------- Info box (tips) ---------- */
+        /* ---------- Info box ---------- */
         #info-tips {
             background: #141414;
             border: 1px solid #2a2a2a;
@@ -107,7 +112,7 @@
             transform: scale(1.02);
         }
 
-        /* ---------- Fixed search bar ---------- */
+        /* ---------- Search bar ---------- */
         #search-bar {
             background: #1a1a1a;
             border-radius: 12px;
@@ -145,7 +150,7 @@
             min-width: 100px;
         }
 
-        /* ---------- Tag groups (below search bar) ---------- */
+        /* ---------- Tag groups ---------- */
         #tag-groups {
             background: #1a1a1a;
             border-radius: 12px;
@@ -201,7 +206,6 @@
             background: #f44336;
         }
 
-        /* Clear all button - left aligned */
         #clear-tags-wrapper {
             display: flex;
             justify-content: flex-start;
@@ -220,15 +224,14 @@
             color: #ccc;
         }
 
-        /* ---------- Grid of sounds ---------- */
+        /* ---------- Sound grid ---------- */
         #sound-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 12px;
             padding-bottom: 20px;
         }
 
-        /* ---------- Sound card ---------- */
         .sound-card {
             background: #161616;
             border: 1px solid #2a2a2a;
@@ -281,7 +284,6 @@
             color: #999;
         }
 
-        /* ---------- "Copied!" notification ---------- */
         #copy-notification {
             position: fixed;
             bottom: 30px;
@@ -346,7 +348,6 @@
 </head>
 <body>
     <div id="app">
-        <!-- Info / Tips -->
         <div id="info-tips">
             💡 <strong>how to use:</strong> click a sound card to open it in the
             <strong>creator store</strong> (make sure you're logged into roblox).
@@ -356,7 +357,6 @@
             use the search bar, category filter, and tag groups to narrow down results.
         </div>
 
-        <!-- Discord section -->
         <div id="discord-section">
             <span class="label">💬 <strong>Join my community server</strong> for skill builder help and other useful resources</span>
             <a href="https://discord.gg/cY3faJJt5M" target="_blank" class="invite-link">
@@ -364,7 +364,6 @@
             </a>
         </div>
 
-        <!-- Search bar -->
         <div id="search-bar">
             <input type="text" id="keyword-input" placeholder="Search name or creator..." />
             <select id="category-select">
@@ -372,65 +371,49 @@
             </select>
         </div>
 
-        <!-- Tag groups -->
         <div id="tag-groups"></div>
 
-        <!-- Sound grid -->
         <div id="sound-grid"></div>
         <div id="no-results" style="display:none;">No sounds match your filters.</div>
     </div>
 
-    <!-- Copy notification -->
     <div id="copy-notification">✅ Copied to clipboard!</div>
 
     <script>
         // ---------- Global state ----------
         let allSounds = [];
-        let tagSet = new Set(); // lowercase tags for existence check
-        let tagOriginalMap = {}; // lowercase -> original casing
+        let tagSet = new Set();
+        let tagOriginalMap = {};
         let copyTimeout = null;
-
-        // ---------- Tag state: each tag can be 'include', 'exclude', or null ----------
         let tagStates = {};
 
         // ---------- Tag group definitions ----------
         const tagGroups = [
-            {
-                name: 'Damage',
-                tags: ['blood', 'impact', 'stab/slice', 'ragdoll']
-            },
-            {
-                name: 'Motion',
-                tags: ['footsteps', 'cloth', 'movement', 'swing']
-            },
-            {
-                name: 'Theme',
-                tags: ['steel', 'glass/ice', 'explosion', 'water', 'fire', 'lightning', 'other (magical)']
-            },
-            {
-                name: 'Source',
-                tags: ['jjk', 'dragon ball', 'project moon', 'ut/dr', 'vanilla jjs', 'cartoons', 'animals', 'humor']
-            },
-            {
-                name: 'Meta',
-                tags: ['voice', 'loop', 'pack', 'layered', 'misc']
-            }
+            { name: 'Damage', tags: ['blood', 'impact', 'stab/slice', 'ragdoll'] },
+            { name: 'Motion', tags: ['footsteps', 'cloth', 'movement', 'swing'] },
+            { name: 'Theme', tags: ['steel', 'glass/ice', 'explosion', 'water', 'fire', 'lightning', 'other (magical)'] },
+            { name: 'Source', tags: ['jjk', 'dragon ball', 'project moon', 'ut/dr', 'vanilla jjs', 'cartoons', 'animals', 'humor'] },
+            { name: 'Meta', tags: ['voice', 'loop', 'pack', 'layered', 'misc'] }
         ];
 
-        // ---------- Gist raw URL (your public Gist) ----------
+        // ---------- Raw Gist URL (with cache-busting) ----------
         const GIST_RAW_URL = 'https://gist.githubusercontent.com/plantcatw/9f86c9ee2ebc8e85eef3b2716d7a42dc/raw/sounds.json';
 
-        // ---------- Load data from Gist ----------
+        // ---------- Load data ----------
         async function loadData() {
             try {
-                const resp = await fetch(GIST_RAW_URL);
-                if (!resp.ok) throw new Error(`Failed to fetch Gist (status ${resp.status})`);
+                // Add cache-busting timestamp
+                const url = `${GIST_RAW_URL}?t=${Date.now()}`;
+                console.log('Fetching sounds from:', url);
+                const resp = await fetch(url, {
+                    cache: 'no-store',
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                if (!resp.ok) throw new Error(`Failed to fetch (status ${resp.status})`);
                 allSounds = await resp.json();
-                // Ensure it's an array
-                if (!Array.isArray(allSounds)) {
-                    throw new Error('Gist content is not an array');
-                }
-                // Process tags
+                if (!Array.isArray(allSounds)) throw new Error('Not an array');
+
                 allSounds.forEach(s => {
                     if (s.tags && Array.isArray(s.tags)) {
                         s.tags.forEach(t => {
@@ -446,23 +429,23 @@
                 populateTagGroups();
                 populateFilters();
                 render();
+                console.log('✅ Sounds loaded successfully.');
             } catch (e) {
-                console.error('Failed to load sounds from Gist:', e);
+                console.error('Failed to load sounds:', e);
                 document.getElementById('sound-grid').innerHTML =
-                    `<div style="color:#a44;">⚠️ Could not load sound library from Gist. Please try again later.</div>`;
+                    `<div style="color:#a44;">⚠️ Could not load sound library. Please try again later.</div>`;
             }
         }
 
         function populateFilters() {
             const catSelect = document.getElementById('category-select');
-            // Keep only the first option ("All categories")
             while (catSelect.options.length > 1) catSelect.remove(1);
             const categories = [...new Set(allSounds.map(s => s.category).filter(Boolean))];
             categories.sort();
             categories.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c;
-                opt.textContent = c; // preserve original casing
+                opt.textContent = c;
                 catSelect.appendChild(opt);
             });
         }
@@ -472,7 +455,6 @@
             const container = document.getElementById('tag-groups');
             container.innerHTML = '';
 
-            // Clear all button (left aligned)
             const clearWrapper = document.createElement('div');
             clearWrapper.id = 'clear-tags-wrapper';
             const clearBtn = document.createElement('button');
@@ -486,36 +468,27 @@
             clearWrapper.appendChild(clearBtn);
             container.appendChild(clearWrapper);
 
-            // Create each group
             tagGroups.forEach(group => {
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'tag-group';
-
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'group-name';
-                nameSpan.textContent = group.name; // already capitalized
+                nameSpan.textContent = group.name;
                 groupDiv.appendChild(nameSpan);
 
-                // Only show tags that exist in the dataset
                 const existingTags = group.tags.filter(t => tagSet.has(t));
-                if (existingTags.length === 0) {
-                    return; // skip empty groups
-                }
+                if (existingTags.length === 0) return;
 
                 existingTags.forEach(tagLower => {
                     const chip = document.createElement('span');
                     chip.className = 'tag-chip';
-                    chip.dataset.tag = tagLower; // store lowercase for state
-                    // Display original casing from map
+                    chip.dataset.tag = tagLower;
                     chip.textContent = tagOriginalMap[tagLower] || tagLower;
 
-                    // Left-click: include
                     chip.addEventListener('click', (e) => {
                         e.preventDefault();
                         toggleTagState(tagLower, 'include');
                     });
-
-                    // Right-click: exclude
                     chip.addEventListener('contextmenu', (e) => {
                         e.preventDefault();
                         toggleTagState(tagLower, 'exclude');
@@ -527,14 +500,12 @@
                 container.appendChild(groupDiv);
             });
 
-            // "Other" group for tags not in any group
             const groupedTags = new Set();
             tagGroups.forEach(g => g.tags.forEach(t => groupedTags.add(t)));
             const ungroupedTags = [...tagSet].filter(t => !groupedTags.has(t));
             if (ungroupedTags.length > 0) {
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'tag-group';
-
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'group-name';
                 nameSpan.textContent = 'Other';
@@ -564,7 +535,6 @@
             updateTagChips();
         }
 
-        // ---------- Toggle tag state ----------
         function toggleTagState(tag, newState) {
             const current = tagStates[tag];
             if (current === newState) {
@@ -577,16 +547,12 @@
         }
 
         function updateTagChips() {
-            const chips = document.querySelectorAll('.tag-chip');
-            chips.forEach(chip => {
+            document.querySelectorAll('.tag-chip').forEach(chip => {
                 const tag = chip.dataset.tag;
                 const state = tagStates[tag];
                 chip.classList.remove('include', 'exclude');
-                if (state === 'include') {
-                    chip.classList.add('include');
-                } else if (state === 'exclude') {
-                    chip.classList.add('exclude');
-                }
+                if (state === 'include') chip.classList.add('include');
+                else if (state === 'exclude') chip.classList.add('exclude');
             });
         }
 
@@ -598,7 +564,6 @@
             return Object.keys(tagStates).filter(t => tagStates[t] === 'exclude');
         }
 
-        // ---------- Filtering ----------
         function getFilteredSounds() {
             const keyword = document.getElementById('keyword-input').value.trim().toLowerCase();
             const category = document.getElementById('category-select').value;
@@ -606,15 +571,12 @@
             const excludeTags = getActiveExcludeTags();
 
             return allSounds.filter(sound => {
-                // Keyword: name or creator
                 if (keyword) {
                     const nameMatch = sound.name && sound.name.toLowerCase().includes(keyword);
                     const creatorMatch = sound.creator && sound.creator.toLowerCase().includes(keyword);
                     if (!nameMatch && !creatorMatch) return false;
                 }
-                // Category (exact match, case-sensitive)
                 if (category && sound.category !== category) return false;
-                // Include tags: must have ALL included tags
                 if (includeTags.length > 0) {
                     if (!sound.tags || !Array.isArray(sound.tags)) return false;
                     const soundTagsLower = sound.tags.map(t => t.toLowerCase());
@@ -622,7 +584,6 @@
                         if (!soundTagsLower.includes(t)) return false;
                     }
                 }
-                // Exclude tags: must have NONE of the excluded tags
                 if (excludeTags.length > 0) {
                     if (!sound.tags || !Array.isArray(sound.tags)) return true;
                     const soundTagsLower = sound.tags.map(t => t.toLowerCase());
@@ -639,18 +600,12 @@
             const notification = document.getElementById('copy-notification');
             notification.classList.add('show');
             clearTimeout(copyTimeout);
-            copyTimeout = setTimeout(() => {
-                notification.classList.remove('show');
-            }, 1500);
+            copyTimeout = setTimeout(() => notification.classList.remove('show'), 1500);
         }
 
         function copyToClipboard(text) {
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showCopyNotification();
-                }).catch(() => {
-                    fallbackCopy(text);
-                });
+                navigator.clipboard.writeText(text).then(showCopyNotification).catch(() => fallbackCopy(text));
             } else {
                 fallbackCopy(text);
             }
@@ -667,7 +622,6 @@
                 document.execCommand('copy');
                 showCopyNotification();
             } catch (err) {
-                console.warn('Copy failed:', err);
                 alert('Could not copy ID. Please copy it manually.');
             }
             document.body.removeChild(textarea);
