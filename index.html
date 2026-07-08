@@ -170,7 +170,7 @@
         .tag-group .category-chip {
             background: #2a2a2a;
             border: 1px solid #444;
-            border-radius: 4px; /* square */
+            border-radius: 4px;
             padding: 2px 12px;
             font-size: 0.8rem;
             cursor: pointer;
@@ -317,6 +317,37 @@
             color: #999;
         }
 
+        /* Store button – friendly green */
+        .store-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 15px;
+            line-height: 1;
+            cursor: pointer;
+            transition: 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.35);
+            z-index: 2;
+        }
+        .store-btn:hover {
+            transform: scale(1.08);
+            background: #66BB6A;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.55);
+        }
+        .store-btn:active {
+            transform: scale(0.92);
+        }
+
         #copy-notification {
             position: fixed;
             bottom: 30px;
@@ -381,9 +412,8 @@
 <body>
     <div id="app">
         <div id="info-tips">
-            💡 <strong>how to use:</strong> click a sound card to open it in the
-            <strong>creator store</strong> (make sure you're logged into roblox).
-            hold <kbd>ctrl</kbd> (or <kbd>cmd</kbd> on mac) + click to <strong>copy the sound id</strong>.
+            💡 <strong>how to use:</strong>
+            <span>click/tap a sound card to <strong>copy the sound id</strong>. click/tap the green button to open the <strong>creator store</strong>.</span>
             <br />
             🏷️ <strong>tags:</strong> left-click to <span class="tag-example">include</span> | right-click to <span class="tag-exclude-example">exclude</span>.
             <br />
@@ -788,20 +818,30 @@
                             ${categoryHtml}
                             <div class="tags">${tagsHtml}</div>
                         </div>
+                        <button class="store-btn" data-id="${sound.id}" title="Open in Creator Store">🔗</button>
                     </div>
                 `;
             });
             grid.innerHTML = html;
 
+            // Attach click handler to each card
             grid.querySelectorAll('.sound-card').forEach(card => {
                 const id = parseInt(card.dataset.id);
+
+                // Store button: always opens Creator Store
+                const storeBtn = card.querySelector('.store-btn');
+                if (storeBtn) {
+                    storeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.open(`https://create.roblox.com/store/asset/${id}`, '_blank');
+                    });
+                }
+
+                // Card click: always copies ID (universal)
                 card.addEventListener('click', (e) => {
-                    if (e.ctrlKey || e.metaKey) {
-                        e.preventDefault();
-                        copyToClipboard(id.toString());
-                        return;
-                    }
-                    window.open(`https://create.roblox.com/store/asset/${id}`, '_blank');
+                    // If the click came from the store button, ignore (already handled)
+                    if (e.target.closest('.store-btn')) return;
+                    copyToClipboard(id.toString());
                 });
             });
         }
