@@ -9,7 +9,7 @@
     <title>plantcatw sound tags</title>
     <link rel="icon" type="image/png" href="/favicon.ico" />
     <style>
-        /* ---------- All existing styles ---------- */
+        /* ---------- All existing styles (unchanged) ---------- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -544,6 +544,7 @@
             <br />
             🏷️ <strong>filters:</strong> left-click to <span class="tag-example">include</span> | right-click to <span class="tag-exclude-example">exclude</span>.
             <br />
+            🗂️ <strong>sorted alphabetically by creator.</strong>
         </div>
 
         <div id="discord-section">
@@ -1021,6 +1022,14 @@
             const grid = document.getElementById('sound-grid');
             const noResults = document.getElementById('no-results');
             const filtered = getFilteredSounds();
+
+            // --- SORT alphabetically by creator (case-insensitive) ---
+            filtered.sort((a, b) => {
+                const creatorA = (a.creator || '').toLowerCase();
+                const creatorB = (b.creator || '').toLowerCase();
+                return creatorA.localeCompare(creatorB);
+            });
+
             if (filtered.length === 0) {
                 grid.innerHTML = '';
                 noResults.style.display = 'block';
