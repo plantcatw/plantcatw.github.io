@@ -612,7 +612,6 @@
 
         // ---------- Dynamic scroll threshold ----------
         function getScrollThreshold() {
-            // 20% of viewport height, clamped between 100px and 300px
             const raw = window.innerHeight * 0.2;
             return Math.min(Math.max(raw, 100), 300);
         }
@@ -914,6 +913,7 @@
             const panel = document.getElementById('filter-panel');
             if (collapsed === isCollapsed && panel.classList.contains('collapsed') === collapsed) return;
 
+            // If user manually expanded, prevent auto-collapse for a few seconds
             if (!collapsed && fromUser) {
                 manualExpand = true;
                 clearTimeout(manualExpandTimeout);
@@ -936,9 +936,12 @@
             const scrollY = window.scrollY;
             const threshold = getScrollThreshold();
 
+            // Auto-collapse when scrolling past threshold
             if (scrollY > threshold && !isCollapsed) {
                 setCollapsed(true);
-            } else if (scrollY < 10 && isCollapsed) {
+            }
+            // Auto-expand ONLY when scrolled to the very top
+            else if (scrollY < 10 && isCollapsed) {
                 setCollapsed(false);
             }
         }
