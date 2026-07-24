@@ -9,7 +9,7 @@
     <title>plantcatw sound tags</title>
     <link rel="icon" type="image/png" href="/favicon.ico" />
     <style>
-        /* ---------- All existing styles (unchanged) ---------- */
+        /* ---------- Reset and base ---------- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -33,7 +33,7 @@
             gap: 12px;
         }
 
-        /* Info box */
+        /* ---------- Info box ---------- */
         #info-tips {
             background: #141414;
             border: 1px solid #2a2a2a;
@@ -55,6 +55,21 @@
             font-size: 0.75rem;
             color: #ccc;
         }
+        #info-tips .desktop-only {
+            display: inline;
+        }
+        #info-tips .mobile-only {
+            display: none;
+        }
+        @media (pointer: coarse) {
+            #info-tips .desktop-only {
+                display: none;
+            }
+            #info-tips .mobile-only {
+                display: inline;
+            }
+        }
+
         .tag-example {
             display: inline-block;
             background: #4CAF50;
@@ -75,7 +90,7 @@
             text-decoration: line-through;
         }
 
-        /* Discord section */
+        /* ---------- Discord section ---------- */
         #discord-section {
             background: #141414;
             border: 1px solid #2a2a2a;
@@ -83,7 +98,7 @@
             padding: 8px 14px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px 12px;
             flex-wrap: wrap;
         }
         #discord-section .label {
@@ -93,7 +108,7 @@
         #discord-section .label strong {
             color: #66BB6A;
         }
-        #discord-section .invite-link {
+        .discord-btn {
             background: #5865F2;
             color: #fff;
             padding: 4px 14px;
@@ -105,13 +120,20 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
         }
-        #discord-section .invite-link:hover {
+        .discord-btn:hover {
             background: #4752c4;
             transform: scale(1.02);
         }
+        .discord-btn.secondary {
+            background: #404040;
+        }
+        .discord-btn.secondary:hover {
+            background: #555;
+        }
 
-        /* ---------- Search + Panel container ---------- */
+        /* ---------- Filter panel ---------- */
         #filter-panel {
             position: sticky;
             top: 0;
@@ -125,20 +147,20 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
         }
 
-        /* Search bar – sticky top */
+        /* ---------- Search bar: always visible, bottom corners always square ---------- */
         #search-bar {
             background: #1a1a1a;
-            border-radius: 12px 12px 12px 12px;
-            padding: 10px 14px;
+            border-radius: 12px 12px 0 0;
+            padding: 8px 12px;
             display: flex;
             align-items: center;
-            gap: 8px 12px;
+            gap: 8px;
             border: 1px solid #333;
+            border-bottom: none;
             flex-wrap: wrap;
-            transition: border-radius 0.3s ease, cursor 0.2s;
-        }
-        #filter-panel.collapsed #search-bar {
-            border-radius: 12px;
+            position: relative;
+            z-index: 2;
+            min-height: 52px;
         }
 
         #search-bar input {
@@ -149,14 +171,15 @@
             border-radius: 6px;
             font-size: 0.9rem;
             outline: none;
-            flex: 2;
-            min-width: 120px;
+            flex: 1;
+            min-width: 80px;
+            height: 36px;
         }
         #search-bar input:focus {
             border-color: #4CAF50;
         }
 
-        /* Collapse toggle button */
+        /* ---------- Collapse toggle button ---------- */
         #collapse-toggle {
             background: none;
             border: none;
@@ -172,6 +195,8 @@
             gap: 4px;
             white-space: nowrap;
             flex-shrink: 0;
+            position: relative;
+            height: 36px;
         }
         #collapse-toggle:hover {
             color: #ccc;
@@ -185,34 +210,293 @@
         #filter-panel.collapsed #collapse-toggle .arrow {
             transform: rotate(180deg);
         }
+        #collapse-toggle .label-text {
+            display: inline;
+        }
 
-        /* Tag groups container – expandable with smooth shrink */
+        /* ---------- Mobile: bigger button, no text ---------- */
+        @media (max-width: 600px) {
+            #search-bar {
+                min-height: 44px;
+                padding: 6px 10px;
+                gap: 6px;
+            }
+            #search-bar input {
+                min-width: 60px;
+                font-size: 0.85rem;
+                padding: 4px 8px;
+                height: 38px;
+            }
+            #collapse-toggle {
+                height: 38px;
+                width: 44px;
+                padding: 0;
+                justify-content: center;
+                border-radius: 6px;
+                background: #2a2a2a;
+                border: 1px solid #444;
+                flex-shrink: 0;
+                font-size: 1.1rem;
+            }
+            #collapse-toggle:hover {
+                background: #3a3a3a;
+            }
+            #collapse-toggle .label-text {
+                display: none;
+            }
+            #collapse-toggle .arrow {
+                font-size: 1.2rem;
+            }
+        }
+        @media (max-width: 400px) {
+            #search-bar {
+                min-height: 40px;
+                padding: 4px 8px;
+                gap: 4px;
+            }
+            #search-bar input {
+                height: 34px;
+                font-size: 0.8rem;
+                padding: 3px 6px;
+                min-width: 50px;
+            }
+            #collapse-toggle {
+                height: 34px;
+                width: 40px;
+                font-size: 1rem;
+            }
+            #collapse-toggle .arrow {
+                font-size: 1rem;
+            }
+        }
+
+        /* ---------- First-visit attention animation ---------- */
+        @keyframes pulse-attention {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+                color: #888;
+            }
+            20% {
+                box-shadow: 0 0 20px 6px rgba(76, 175, 80, 0.5);
+                color: #66BB6A;
+            }
+            40% {
+                box-shadow: 0 0 8px 2px rgba(76, 175, 80, 0.2);
+                color: #888;
+            }
+            60% {
+                box-shadow: 0 0 20px 6px rgba(76, 175, 80, 0.5);
+                color: #66BB6A;
+            }
+            80% {
+                box-shadow: 0 0 8px 2px rgba(76, 175, 80, 0.2);
+                color: #888;
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+                color: #888;
+            }
+        }
+
+        #collapse-toggle.attention {
+            animation: pulse-attention 2s ease-in-out 3;
+            border-radius: 4px;
+        }
+
+        /* ---------- Preview row: always visible, bottom corners rounded only when collapsed ---------- */
+        #preview-row {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-top: none;
+            border-radius: 0;
+            padding: 6px 12px 8px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 6px;
+            min-height: 32px;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        #filter-panel.collapsed #preview-row {
+            border-radius: 0 0 12px 12px;
+        }
+
+        .preview-chip {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 1px 10px;
+            font-size: 0.7rem;
+            color: #aaa;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .preview-chip.include {
+            border-color: #4CAF50;
+            color: #66BB6A;
+        }
+        .preview-chip.exclude {
+            border-color: #f44336;
+            color: #f44336;
+            text-decoration: line-through;
+        }
+        .preview-chip.category-chip {
+            border-color: #5865F2;
+            color: #8ea4e8;
+        }
+        .preview-chip .label {
+            color: #666;
+            font-size: 0.6rem;
+            margin-right: 2px;
+        }
+        .preview-chip.fav-chip {
+            border-color: #FFD700;
+            color: #FFD700;
+            font-weight: 600;
+        }
+        .preview-chip.fav-chip.exclude {
+            border-color: #f44336;
+            color: #f44336;
+            text-decoration: line-through;
+        }
+        .preview-empty {
+            color: #555;
+            font-size: 0.75rem;
+            padding: 2px 4px;
+        }
+
+        /* ---------- Compact chip summaries (mobile overflow handling) ---------- */
+        .preview-chip-summary {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 1px 10px;
+            font-size: 0.7rem;
+            color: #aaa;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .preview-chip-summary.include {
+            border-color: #4CAF50;
+            color: #66BB6A;
+        }
+        .preview-chip-summary.exclude {
+            border-color: #f44336;
+            color: #f44336;
+            text-decoration: line-through;
+        }
+        .preview-chip-summary.fav-chip {
+            border-color: #FFD700;
+            color: #FFD700;
+            font-weight: 600;
+        }
+        .preview-chip-summary .label {
+            color: #666;
+            font-size: 0.6rem;
+            margin-right: 2px;
+        }
+
+        @media (max-width: 600px) {
+            #preview-row {
+                padding: 4px 10px 6px 10px;
+                min-height: 28px;
+                gap: 3px 5px;
+            }
+            .preview-chip {
+                font-size: 0.65rem;
+                padding: 1px 8px;
+                max-width: 120px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .preview-chip-summary {
+                font-size: 0.65rem;
+                padding: 1px 8px;
+            }
+        }
+        @media (max-width: 400px) {
+            #preview-row {
+                padding: 3px 8px 4px 8px;
+                min-height: 24px;
+                gap: 2px 4px;
+            }
+            .preview-chip {
+                font-size: 0.6rem;
+                padding: 1px 6px;
+                max-width: 80px;
+            }
+            .preview-chip-summary {
+                font-size: 0.6rem;
+                padding: 1px 6px;
+            }
+            .preview-empty {
+                font-size: 0.65rem;
+            }
+        }
+
+        /* ---------- Tag panel: slides out from behind ---------- */
         #tag-groups-wrapper {
             overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                        opacity 0.3s ease,
-                        margin 0.3s ease;
             max-height: 2000px;
             opacity: 1;
-            margin-top: 10px;
+            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                        opacity 0.3s ease,
+                        transform 0.3s ease,
+                        margin 0.3s ease;
+            transform: translateY(0);
+            pointer-events: auto;
+            background: rgba(26, 26, 26, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 0 0 12px 12px;
+            border: 1px solid rgba(51, 51, 51, 0.8);
+            border-top: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            margin-top: 0;
         }
 
         #filter-panel.collapsed #tag-groups-wrapper {
             max-height: 0;
             opacity: 0;
-            margin-top: 0;
+            transform: translateY(-10px);
             pointer-events: none;
+            box-shadow: none;
+            margin-top: 0;
+            border-radius: 0;
         }
 
-        /* Tag groups */
+        /* ---------- Tag groups ---------- */
         #tag-groups {
-            background: #1a1a1a;
-            border-radius: 12px;
             padding: 12px 16px;
-            border: 1px solid #333;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            max-height: 70vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        @media (max-width: 600px) {
+            #tag-groups {
+                padding: 10px 12px;
+                gap: 8px;
+                max-height: 60vh;
+            }
+            .tag-group {
+                gap: 3px 6px;
+            }
+            .tag-group .group-name {
+                font-size: 0.6rem;
+                min-width: 50px;
+            }
+            .tag-group .tag-chip,
+            .tag-group .category-chip,
+            .favorites-chip {
+                font-size: 0.7rem;
+                padding: 1px 10px;
+            }
         }
 
         .tag-group {
@@ -230,7 +514,6 @@
             min-width: 60px;
             margin-right: 4px;
         }
-        /* Category chips: square */
         .tag-group .category-chip {
             background: #2a2a2a;
             border: 1px solid #444;
@@ -262,7 +545,6 @@
             background: #f44336;
         }
 
-        /* Normal tag chips: rounded */
         .tag-group .tag-chip {
             background: #2a2a2a;
             border: 1px solid #444;
@@ -294,10 +576,44 @@
             background: #f44336;
         }
 
-        /* Separator line between categories and tags */
+        /* ---------- Favorites toggle chip ---------- */
+        .favorites-chip {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 20px;
+            padding: 2px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+            user-select: none;
+            color: #aaa;
+        }
+        .favorites-chip:hover {
+            background: #3a3a3a;
+        }
+        .favorites-chip.include {
+            background: #FFD700;
+            border-color: #FFD700;
+            color: #000;
+            font-weight: 600;
+            box-shadow: 0 0 16px rgba(255, 215, 0, 0.4);
+        }
+        .favorites-chip.include:hover {
+            background: #ffe44d;
+        }
+        .favorites-chip.exclude {
+            background: #d32f2f;
+            border-color: #f44336;
+            color: #fff;
+            text-decoration: line-through;
+        }
+        .favorites-chip.exclude:hover {
+            background: #f44336;
+        }
+
         #category-tag-separator {
             border: none;
-            border-top: 1px solid #333;
+            border-top: 1px solid rgba(51, 51, 51, 0.6);
             margin: 4px 0 8px 0;
             opacity: 0.5;
         }
@@ -305,8 +621,10 @@
         #clear-tags-wrapper {
             display: flex;
             justify-content: flex-start;
+            align-items: center;
             margin-bottom: 4px;
             gap: 8px;
+            flex-wrap: wrap;
         }
         #clear-tags {
             background: none;
@@ -320,59 +638,134 @@
         #clear-tags:hover {
             color: #ccc;
         }
-
-        /* ---------- Collapsed preview chips ---------- */
-        #collapsed-preview {
-            display: none;
-            flex: 1;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-            min-width: 0;
+        .separator-dot {
+            color: #444;
+            font-size: 0.6rem;
         }
-        #filter-panel.collapsed #collapsed-preview {
+        #settings-trigger {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-decoration: underline;
+            padding: 4px 6px;
+        }
+        #settings-trigger:hover {
+            color: #ccc;
+        }
+
+        /* ---------- Settings overlay ---------- */
+        #settings-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        #settings-overlay.visible {
             display: flex;
         }
-
-        /* When collapsed, the whole search bar becomes clickable to expand */
-        #filter-panel.collapsed #search-bar {
-            cursor: pointer;
-        }
-        #filter-panel.collapsed #search-bar input {
-            pointer-events: none;
-            opacity: 0.6;
-            cursor: pointer;
-        }
-
-        .preview-chip {
-            background: #2a2a2a;
-            border: 1px solid #444;
+        #settings-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
             border-radius: 12px;
-            padding: 1px 10px;
-            font-size: 0.7rem;
+            padding: 24px 32px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
+        }
+        #settings-box h2 {
+            color: #eee;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            letter-spacing: 0.3px;
+        }
+        #settings-box .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        #settings-box .setting-row:last-child {
+            border-bottom: none;
+        }
+        #settings-box .setting-label {
             color: #aaa;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 120px;
+            font-size: 0.9rem;
         }
-        .preview-chip.include {
-            border-color: #4CAF50;
-            color: #66BB6A;
+        #settings-box .reset-btn {
+            background: #d32f2f;
+            color: #fff;
+            border: none;
+            padding: 4px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
         }
-        .preview-chip.exclude {
-            border-color: #f44336;
-            color: #f44336;
-            text-decoration: line-through;
+        #settings-box .reset-btn:hover {
+            background: #f44336;
+            transform: scale(1.02);
         }
-        .preview-chip.category-chip {
-            border-color: #5865F2;
-            color: #8ea4e8;
+        #settings-box .close-settings {
+            margin-top: 16px;
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.85rem;
+            padding: 4px;
+            display: block;
+            text-align: center;
+            width: 100%;
         }
-        .preview-chip .label {
-            color: #666;
-            font-size: 0.6rem;
-            margin-right: 2px;
+        #settings-box .close-settings:hover {
+            color: #ccc;
+        }
+
+        /* ---------- Search Logic toggle ---------- */
+        .logic-toggle-group {
+            display: flex;
+            gap: 4px;
+            background: #2a2a2a;
+            border-radius: 6px;
+            padding: 3px;
+            border: 1px solid #444;
+        }
+        .logic-btn {
+            background: none;
+            border: none;
+            color: #888;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: 0.2s;
+            font-family: inherit;
+            min-width: 40px;
+        }
+        .logic-btn:hover {
+            color: #ccc;
+            background: #3a3a3a;
+        }
+        .logic-btn.active {
+            background: #4CAF50;
+            color: #fff;
+        }
+        .logic-btn.active:hover {
+            background: #66BB6A;
         }
 
         /* ---------- Sound grid ---------- */
@@ -381,6 +774,7 @@
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 12px;
             padding-bottom: 20px;
+            margin-top: 4px;
         }
 
         .sound-card {
@@ -400,10 +794,19 @@
             border-color: #4CAF50;
             background: #1e1e1e;
         }
+        .sound-card.favorited {
+            border-color: #FFD700;
+            box-shadow: 0 0 16px rgba(255, 215, 0, 0.2);
+        }
         .sound-card .title {
             font-weight: 600;
             font-size: 0.95rem;
-            padding-right: 36px;
+            padding-right: 52px;
+        }
+        .sound-card .title .star {
+            color: #FFD700;
+            margin-left: 4px;
+            font-weight: 700;
         }
         .sound-card .creator {
             font-size: 0.8rem;
@@ -416,6 +819,7 @@
             font-size: 0.7rem;
             color: #888;
             margin-top: 2px;
+            padding-right: 36px;
         }
         .sound-card .meta .category {
             background: #2a2a2a;
@@ -436,35 +840,103 @@
             color: #999;
         }
 
-        /* Store button – friendly green */
+        /* ---------- Favorite toggle button (top-right) ---------- */
+        .fav-btn {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: #555;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 3;
+            padding: 2px 4px;
+            line-height: 1;
+        }
+        .fav-btn:hover {
+            color: #aaa;
+            transform: scale(1.1);
+        }
+        .fav-btn:active {
+            transform: scale(0.9);
+        }
+        .fav-btn.favorited {
+            color: #FFD700;
+            text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+        }
+        .fav-btn.favorited:hover {
+            color: #ffe44d;
+        }
+
+        /* Store button – black with Roblox logo */
         .store-btn {
             position: absolute;
             bottom: 8px;
             right: 10px;
-            background: #4CAF50;
-            color: #fff;
+            background: #000000;
             border: none;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 15px;
-            line-height: 1;
+            width: 32px;
+            height: 32px;
             cursor: pointer;
             transition: 0.25s;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0;
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.35);
             z-index: 2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
         }
         .store-btn:hover {
             transform: scale(1.08);
-            background: #66BB6A;
-            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.55);
+            background: #1a1a1a;
         }
         .store-btn:active {
             transform: scale(0.92);
+        }
+        .store-btn svg {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .fav-btn {
+                font-size: 1.3rem;
+                top: 6px;
+                right: 8px;
+                padding: 4px;
+            }
+            .store-btn {
+                width: 34px;
+                height: 34px;
+                bottom: 6px;
+                right: 8px;
+            }
+            .store-btn svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+        @media (max-width: 400px) {
+            .fav-btn {
+                font-size: 1.1rem;
+                top: 4px;
+                right: 6px;
+                padding: 2px;
+            }
+            .store-btn {
+                width: 30px;
+                height: 30px;
+                bottom: 4px;
+                right: 6px;
+            }
+            .store-btn svg {
+                width: 16px;
+                height: 16px;
+            }
         }
 
         #copy-notification {
@@ -497,15 +969,23 @@
 
         /* ---------- Responsive ---------- */
         @media (max-width: 600px) {
-            #search-bar {
-                flex-wrap: wrap;
-            }
-            #search-bar input {
-                width: 100%;
-                flex: auto;
-            }
             #sound-grid {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 8px;
+            }
+            .sound-card {
+                padding: 8px 10px;
+            }
+            .sound-card .title {
+                font-size: 0.85rem;
+                padding-right: 44px;
+            }
+            .sound-card .creator {
+                font-size: 0.7rem;
+            }
+            .sound-card .meta {
+                font-size: 0.6rem;
+                padding-right: 28px;
             }
             #discord-section {
                 flex-direction: column;
@@ -519,17 +999,34 @@
                 min-width: 100%;
             }
             #clear-tags-wrapper {
-                justify-content: flex-start;
+                flex-wrap: wrap;
             }
-            .preview-chip {
-                max-width: 80px;
-                font-size: 0.65rem;
-            }
-            #collapse-toggle span:not(.arrow) {
-                display: none;
+            #settings-box {
+                padding: 16px 20px;
             }
         }
         @media (max-width: 400px) {
+            #sound-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .sound-card {
+                padding: 6px 8px;
+            }
+            .sound-card .title {
+                font-size: 0.8rem;
+                padding-right: 38px;
+            }
+            .sound-card .creator {
+                font-size: 0.65rem;
+            }
+            .sound-card .meta {
+                font-size: 0.55rem;
+                padding-right: 24px;
+                gap: 2px 4px;
+            }
+        }
+        @media (max-width: 350px) {
             #sound-grid {
                 grid-template-columns: 1fr;
             }
@@ -540,46 +1037,56 @@
     <div id="app">
         <div id="info-tips">
             💡 <strong>how to use:</strong>
-            <span>press on a sound card to <strong>copy audio id</strong>. press on the green button to open the sound on <strong>creator store</strong> in a new tab.</span>
+            <span class="desktop-only">click a sound card to <strong>copy audio id</strong>. click the black button to open the sound on <strong>creator store</strong> in a new tab.</span>
+            <span class="mobile-only">tap a sound card to <strong>copy audio id</strong>. tap the black button to open the sound on <strong>creator store</strong>.</span>
             <br />
-            🏷️ <strong>filters:</strong> left-click to <span class="tag-example">include</span> | right-click to <span class="tag-exclude-example">exclude</span>. click the <kbd>▼</kbd> button to collapse/expand.
+            🏷️ <strong>filters:</strong>
+            <span class="desktop-only">left-click to <span class="tag-example">include</span> | right-click to <span class="tag-exclude-example">exclude</span>.</span>
+            <span class="mobile-only">tap to <span class="tag-example">include</span> | double‑tap to <span class="tag-exclude-example">exclude</span>.</span>
+            click the <kbd>▼</kbd> button to collapse/expand.
+            <br />
+            ⭐ <strong>favorites:</strong> use the ★ button on cards and the filter in the Meta group.
+            <span class="desktop-only"><kbd>alt</kbd> + click works as a shortcut too.</span>
+            <span class="mobile-only"> </span>
         </div>
 
         <div id="discord-section">
             <span class="label">💬 <strong>Join my community server</strong> for skill builder help and other useful resources</span>
-            <a href="https://discord.gg/cY3faJJt5M" target="_blank" class="invite-link">
+            <a href="https://discord.gg/cY3faJJt5M" target="_blank" class="discord-btn">
                 <span>🔗</span> discord.gg/cY3faJJt5M
+            </a>
+            <a href="https://discord.gg/plant-s-stuff-1380121213820735590" target="_blank" class="discord-btn secondary">
+                backup invite link
             </a>
         </div>
 
-        <!-- Filter panel (sticky) -->
-        <div id="filter-panel">
-            <!-- Search bar -->
+        <!-- Filter panel -->
+        <div id="filter-panel" class="collapsed">
             <div id="search-bar">
                 <input type="text" id="keyword-input" placeholder="Search name or creator..." />
 
-                <!-- Collapsed preview chips -->
-                <div id="collapsed-preview">
-                    <span class="preview-chip category-chip" id="preview-category" style="display:none;">
-                        <span class="label">📂</span> <span id="preview-category-name"></span>
-                    </span>
-                    <span class="preview-chip include" id="preview-include-tags" style="display:none;">
-                        + <span id="preview-include-list"></span>
-                    </span>
-                    <span class="preview-chip exclude" id="preview-exclude-tags" style="display:none;">
-                        <span class="label">-</span> <span id="preview-exclude-list"></span>
-                    </span>
-                    <span id="preview-empty" style="color:#555; font-size:0.75rem; padding:2px 4px;">no filters</span>
-                </div>
-
-                <!-- Collapse toggle button -->
                 <button id="collapse-toggle" title="Toggle filters">
-                    <span>Filters</span>
+                    <span class="label-text">Filters</span>
                     <span class="arrow">▼</span>
                 </button>
             </div>
 
-            <!-- Tag groups wrapper (collapsible) -->
+            <!-- Preview row (always visible) -->
+            <div id="preview-row">
+                <span class="preview-chip category-chip" id="preview-category" style="display:none;">
+                    <span class="label">📂</span> <span id="preview-category-name"></span>
+                </span>
+                <span class="preview-chip include" id="preview-include-tags" style="display:none;">
+                    + <span id="preview-include-list"></span>
+                </span>
+                <span class="preview-chip exclude" id="preview-exclude-tags" style="display:none;">
+                    <span class="label">-</span> <span id="preview-exclude-list"></span>
+                </span>
+                <span class="preview-chip fav-chip" id="preview-favorites" style="display:none;">★</span>
+                <span class="preview-chip-summary" id="preview-summary" style="display:none;"></span>
+                <span class="preview-empty" id="preview-empty">no filters</span>
+            </div>
+
             <div id="tag-groups-wrapper">
                 <div id="tag-groups"></div>
             </div>
@@ -590,23 +1097,55 @@
         <div id="no-results" style="display:none;">No sounds match your filters.</div>
     </div>
 
+    <!-- Settings overlay -->
+    <div id="settings-overlay">
+        <div id="settings-box">
+            <h2>Settings</h2>
+
+            <div class="setting-row">
+                <span class="setting-label">Search Logic</span>
+                <div class="logic-toggle-group" id="logic-toggle-group">
+                    <button class="logic-btn active" id="logic-and" data-value="AND">AND</button>
+                    <button class="logic-btn" id="logic-or" data-value="OR">OR</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">Local storage</span>
+                <button class="reset-btn" id="reset-storage-btn">Reset all data</button>
+            </div>
+
+            <button class="close-settings" id="close-settings">Close</button>
+        </div>
+    </div>
+
     <div id="copy-notification">✅ Copied to clipboard!</div>
 
     <script>
+        // ---------- Roblox logo SVG ----------
+        const ROBLOX_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 302.7 302.7" width="18" height="18"><path fill="#FFFFFF" d="M120.5,271.7c-110.9-28.6-120-31-119.9-31.5 C0.7,239.6,62.1,0.5,62.2,0.4c0,0,54,13.8,119.9,30.8s120,30.8,120.1,30.8c0.2,0,0.2,0.4,0.1,0.9c-0.2,1.5-61.5,239.3-61.7,239.5 C240.6,302.5,186.5,288.7,120.5,271.7z M174.9,158c3.2-12.6,5.9-23.1,6-23.4c0.1-0.5-2.3-1.2-23.2-6.6c-12.8-3.3-23.5-5.9-23.6-5.8 c-0.3,0.3-12.1,46.6-12,46.7c0.2,0.2,46.7,12.2,46.8,12.1C168.9,180.9,171.6,170.6,174.9,158L174.9,158z"/></svg>`;
+
+        // ---------- Detect touch device ----------
+        const isTouchDevice = window.matchMedia('(pointer: coarse)').matches ||
+                              ('ontouchstart' in window) ||
+                              (navigator.maxTouchPoints > 0);
+
         // ---------- Global state ----------
         let allSounds = [];
         let tagSet = new Set();
         let tagOriginalMap = {};
         let copyTimeout = null;
 
-        // Tag states: { tagName: 'include' | 'exclude' | null }
         let tagStates = {};
-
-        // Category states: { categoryName: 'include' | 'exclude' | null }
         let categoryStates = {};
+        let isCollapsed = true;
 
-        // Filter panel collapse state
-        let isCollapsed = false;
+        // ---------- Favorites state ----------
+        let favorites = new Set();
+        let favoriteFilter = null;
+
+        // ---------- Search logic ----------
+        let searchLogic = 'AND'; // 'AND' or 'OR'
 
         // ---------- Tag group definitions ----------
         const tagGroups = [
@@ -618,13 +1157,103 @@
             { name: 'Meta', tags: ['voice', 'loop', 'pack', 'layered', 'misc'] }
         ];
 
-        // ---------- Raw Gist URL (n cache-busting) ----------
+        // ---------- URLs ----------
         const GIST_RAW_URL = 'https://gist.githubusercontent.com/plantcatw/9f86c9ee2ebc8e85eef3b2716d7a42dc/raw/sounds.json';
-
-        // ---------- Cloudflare Worker URL (KV fallback) ----------
         const WORKER_URL = 'https://sound-fallback.plantaudioworker.workers.dev/sounds';
 
-        // ---------- Retry helper with exponential backoff ----------
+        // ---------- Favorites helpers ----------
+        function loadFavorites() {
+            try {
+                const data = localStorage.getItem('plantcatw_favorites');
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    favorites = new Set(parsed);
+                } else {
+                    favorites = new Set();
+                }
+            } catch (e) {
+                favorites = new Set();
+            }
+        }
+
+        function saveFavorites() {
+            localStorage.setItem('plantcatw_favorites', JSON.stringify([...favorites]));
+        }
+
+        function toggleFavorite(id) {
+            if (favorites.has(id)) {
+                favorites.delete(id);
+            } else {
+                favorites.add(id);
+            }
+            saveFavorites();
+            render();
+        }
+
+        function setFavoriteFilter(state) {
+            favoriteFilter = state;
+            updateChips();
+            render();
+        }
+
+        // ---------- Search logic helpers ----------
+        function loadSearchLogic() {
+            try {
+                const stored = localStorage.getItem('plantcatw_search_logic');
+                if (stored === 'AND' || stored === 'OR') {
+                    searchLogic = stored;
+                } else {
+                    searchLogic = 'AND';
+                }
+            } catch (e) {
+                searchLogic = 'AND';
+            }
+            updateLogicButtons();
+        }
+
+        function saveSearchLogic(logic) {
+            searchLogic = logic;
+            localStorage.setItem('plantcatw_search_logic', logic);
+            updateLogicButtons();
+            render();
+        }
+
+        function updateLogicButtons() {
+            const andBtn = document.getElementById('logic-and');
+            const orBtn = document.getElementById('logic-or');
+            if (andBtn && orBtn) {
+                andBtn.classList.toggle('active', searchLogic === 'AND');
+                orBtn.classList.toggle('active', searchLogic === 'OR');
+            }
+        }
+
+        // ---------- Settings ----------
+        function openSettings() {
+            document.getElementById('settings-overlay').classList.add('visible');
+            updateLogicButtons();
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-overlay').classList.remove('visible');
+        }
+
+        function resetLocalStorage() {
+            if (confirm('Reset all locally stored data (favorites, visited status, etc.)? This will reload the page.')) {
+                localStorage.clear();
+                const notif = document.getElementById('copy-notification');
+                notif.textContent = '🗑️ Local storage cleared';
+                notif.classList.add('show');
+                setTimeout(() => {
+                    notif.classList.remove('show');
+                    notif.textContent = '✅ Copied to clipboard!';
+                }, 1200);
+                setTimeout(() => {
+                    location.reload(true);
+                }, 500);
+            }
+        }
+
+        // ---------- Fetch with retry ----------
         async function fetchWithRetry(url, options, maxRetries = 3) {
             let lastError;
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -645,12 +1274,11 @@
             throw lastError;
         }
 
-        // ---------- Load data with Gist + KV fallback ----------
+        // ---------- Load data ----------
         async function loadData() {
             const gistUrl = `${GIST_RAW_URL}?t=${Date.now()}`;
             let soundsLoaded = false;
 
-            // Try Gist with a 3-second timeout
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -667,10 +1295,9 @@
                 soundsLoaded = true;
                 console.log('✅ Sounds loaded from Gist.');
             } catch (gistError) {
-                console.warn('⚠️ Gist fetch failed (timeout/error), trying KV fallback...', gistError);
+                console.warn('⚠️ Gist fetch failed, trying KV fallback...', gistError);
             }
 
-            // If Gist failed, try KV Worker
             if (!soundsLoaded) {
                 try {
                     const resp = await fetch(WORKER_URL, {
@@ -691,7 +1318,6 @@
                 }
             }
 
-            // Process tags and categories (unchanged)
             allSounds.forEach(s => {
                 if (s.tags && Array.isArray(s.tags)) {
                     s.tags.forEach(t => {
@@ -711,28 +1337,63 @@
             populateTagGroups();
             render();
             console.log('✅ UI updated successfully.');
+
+            triggerAttentionAnimation();
         }
 
-        // ---------- Populate tag groups (with categories at top) ----------
+        // ---------- Attention animation ----------
+        function triggerAttentionAnimation() {
+            const hasSeen = localStorage.getItem('plantcatw_filters_seen');
+            if (hasSeen) return;
+
+            const toggleBtn = document.getElementById('collapse-toggle');
+            if (!toggleBtn) return;
+
+            toggleBtn.classList.add('attention');
+
+            setTimeout(() => {
+                toggleBtn.classList.remove('attention');
+            }, 6000);
+
+            localStorage.setItem('plantcatw_filters_seen', 'true');
+        }
+
+        // ---------- Populate tag groups ----------
         function populateTagGroups() {
             const container = document.getElementById('tag-groups');
             container.innerHTML = '';
 
             const clearWrapper = document.createElement('div');
             clearWrapper.id = 'clear-tags-wrapper';
+
             const clearBtn = document.createElement('button');
             clearBtn.id = 'clear-tags';
             clearBtn.textContent = 'Clear all filters';
             clearBtn.addEventListener('click', () => {
                 Object.keys(tagStates).forEach(t => { tagStates[t] = null; });
                 Object.keys(categoryStates).forEach(c => { categoryStates[c] = null; });
+                favoriteFilter = null;
                 updateChips();
                 render();
             });
             clearWrapper.appendChild(clearBtn);
+
+            const dot = document.createElement('span');
+            dot.className = 'separator-dot';
+            dot.textContent = '●';
+            clearWrapper.appendChild(dot);
+
+            const settingsTrigger = document.createElement('button');
+            settingsTrigger.id = 'settings-trigger';
+            settingsTrigger.textContent = 'settings';
+            settingsTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openSettings();
+            });
+            clearWrapper.appendChild(settingsTrigger);
+
             container.appendChild(clearWrapper);
 
-            // Categories group (top)
             const categories = [...new Set(allSounds.map(s => s.category).filter(Boolean))];
             categories.sort();
             if (categories.length > 0) {
@@ -776,6 +1437,25 @@
                         render();
                     });
 
+                    if (isTouchDevice) {
+                        let lastTap = 0;
+                        chip.addEventListener('touchend', (e) => {
+                            const now = Date.now();
+                            if (now - lastTap < 300) {
+                                e.preventDefault();
+                                if (categoryStates[cat] === 'exclude') {
+                                    categoryStates[cat] = null;
+                                } else {
+                                    if (categoryStates[cat] === 'include') categoryStates[cat] = null;
+                                    categoryStates[cat] = 'exclude';
+                                }
+                                updateChips();
+                                render();
+                            }
+                            lastTap = now;
+                        });
+                    }
+
                     catGroupDiv.appendChild(chip);
                 });
 
@@ -786,7 +1466,6 @@
                 container.appendChild(separator);
             }
 
-            // Tag groups
             tagGroups.forEach(group => {
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'tag-group';
@@ -795,6 +1474,48 @@
                 nameSpan.className = 'group-name';
                 nameSpan.textContent = group.name;
                 groupDiv.appendChild(nameSpan);
+
+                if (group.name === 'Meta') {
+                    const favChip = document.createElement('span');
+                    favChip.id = 'favorites-toggle-chip';
+                    favChip.className = 'favorites-chip';
+                    if (favoriteFilter === 'include') favChip.classList.add('include');
+                    else if (favoriteFilter === 'exclude') favChip.classList.add('exclude');
+                    favChip.textContent = '★ Favorites';
+                    favChip.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (favoriteFilter === 'include') {
+                            setFavoriteFilter(null);
+                        } else {
+                            setFavoriteFilter('include');
+                        }
+                    });
+                    favChip.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (favoriteFilter === 'exclude') {
+                            setFavoriteFilter(null);
+                        } else {
+                            setFavoriteFilter('exclude');
+                        }
+                    });
+                    if (isTouchDevice) {
+                        let lastTap = 0;
+                        favChip.addEventListener('touchend', (e) => {
+                            const now = Date.now();
+                            if (now - lastTap < 300) {
+                                e.preventDefault();
+                                if (favoriteFilter === 'exclude') {
+                                    setFavoriteFilter(null);
+                                } else {
+                                    setFavoriteFilter('exclude');
+                                }
+                            }
+                            lastTap = now;
+                        });
+                    }
+                    groupDiv.appendChild(favChip);
+                }
 
                 const existingTags = group.tags.filter(t => tagSet.has(t));
                 if (existingTags.length === 0) return;
@@ -814,13 +1535,31 @@
                         toggleTagState(tagLower, 'exclude');
                     });
 
+                    if (isTouchDevice) {
+                        let lastTap = 0;
+                        chip.addEventListener('touchend', (e) => {
+                            const now = Date.now();
+                            if (now - lastTap < 300) {
+                                e.preventDefault();
+                                if (tagStates[tagLower] === 'exclude') {
+                                    tagStates[tagLower] = null;
+                                } else {
+                                    if (tagStates[tagLower] === 'include') tagStates[tagLower] = null;
+                                    tagStates[tagLower] = 'exclude';
+                                }
+                                updateChips();
+                                render();
+                            }
+                            lastTap = now;
+                        });
+                    }
+
                     groupDiv.appendChild(chip);
                 });
 
                 container.appendChild(groupDiv);
             });
 
-            // "Other" tag group
             const groupedTags = new Set();
             tagGroups.forEach(g => g.tags.forEach(t => groupedTags.add(t)));
             const ungroupedTags = [...tagSet].filter(t => !groupedTags.has(t));
@@ -848,6 +1587,25 @@
                         toggleTagState(tagLower, 'exclude');
                     });
 
+                    if (isTouchDevice) {
+                        let lastTap = 0;
+                        chip.addEventListener('touchend', (e) => {
+                            const now = Date.now();
+                            if (now - lastTap < 300) {
+                                e.preventDefault();
+                                if (tagStates[tagLower] === 'exclude') {
+                                    tagStates[tagLower] = null;
+                                } else {
+                                    if (tagStates[tagLower] === 'include') tagStates[tagLower] = null;
+                                    tagStates[tagLower] = 'exclude';
+                                }
+                                updateChips();
+                                render();
+                            }
+                            lastTap = now;
+                        });
+                    }
+
                     groupDiv.appendChild(chip);
                 });
 
@@ -857,7 +1615,6 @@
             updateChips();
         }
 
-        // ---------- Toggle tag state ----------
         function toggleTagState(tag, newState) {
             const current = tagStates[tag];
             if (current === newState) {
@@ -869,8 +1626,8 @@
             render();
         }
 
-        // ---------- Update chip styles ----------
         function updateChips() {
+            // Category chips
             document.querySelectorAll('.category-chip').forEach(chip => {
                 const cat = chip.dataset.category;
                 const state = categoryStates[cat];
@@ -879,6 +1636,7 @@
                 else if (state === 'exclude') chip.classList.add('exclude');
             });
 
+            // Tag chips
             document.querySelectorAll('.tag-chip').forEach(chip => {
                 const tag = chip.dataset.tag;
                 const state = tagStates[tag];
@@ -887,56 +1645,143 @@
                 else if (state === 'exclude') chip.classList.add('exclude');
             });
 
-            updateCollapsedPreview();
+            // Favorites chip
+            const favChip = document.getElementById('favorites-toggle-chip');
+            if (favChip) {
+                favChip.classList.remove('include', 'exclude');
+                if (favoriteFilter === 'include') favChip.classList.add('include');
+                else if (favoriteFilter === 'exclude') favChip.classList.add('exclude');
+            }
+
+            // Update preview with smart overflow handling
+            updatePreview();
         }
 
-        // ---------- Update collapsed preview chips ----------
-        function updateCollapsedPreview() {
+        function updatePreview() {
             const previewCategory = document.getElementById('preview-category');
             const previewCategoryName = document.getElementById('preview-category-name');
             const previewIncludeTags = document.getElementById('preview-include-tags');
             const previewIncludeList = document.getElementById('preview-include-list');
             const previewExcludeTags = document.getElementById('preview-exclude-tags');
             const previewExcludeList = document.getElementById('preview-exclude-list');
+            const previewFavorites = document.getElementById('preview-favorites');
+            const previewSummary = document.getElementById('preview-summary');
             const previewEmpty = document.getElementById('preview-empty');
 
-            let hasFilters = false;
+            if (!previewCategory || !previewIncludeTags || !previewExcludeTags || !previewFavorites || !previewSummary || !previewEmpty) {
+                return;
+            }
 
+            let hasFilters = false;
+            let includeTags = [];
+            let excludeTags = [];
+            let includeCategoryName = null;
+            let excludeCategories = [];
+
+            // Collect filter state
             const includeCategory = Object.keys(categoryStates).find(c => categoryStates[c] === 'include');
             if (includeCategory) {
-                previewCategory.style.display = 'inline-flex';
-                previewCategoryName.textContent = includeCategory;
+                includeCategoryName = includeCategory;
                 hasFilters = true;
+            }
+
+            excludeCategories = Object.keys(categoryStates).filter(c => categoryStates[c] === 'exclude');
+            if (excludeCategories.length > 0) hasFilters = true;
+
+            includeTags = Object.keys(tagStates).filter(t => tagStates[t] === 'include');
+            if (includeTags.length > 0) hasFilters = true;
+
+            excludeTags = Object.keys(tagStates).filter(t => tagStates[t] === 'exclude');
+            if (excludeTags.length > 0) hasFilters = true;
+
+            const hasFavorites = favorites.size > 0;
+            const favFilterActive = favoriteFilter !== null;
+            if (hasFavorites || favFilterActive) hasFilters = true;
+
+            // ---- Decide display mode ----
+            const totalChips = (includeCategoryName ? 1 : 0) + excludeCategories.length + includeTags.length + excludeTags.length + (hasFavorites || favFilterActive ? 1 : 0);
+            const isMobile = window.innerWidth <= 600;
+            const useSummary = isMobile && totalChips > 4;
+
+            // Show/hide individual chips
+            if (includeCategoryName && !useSummary) {
+                previewCategory.style.display = 'inline-flex';
+                if (previewCategoryName) previewCategoryName.textContent = includeCategoryName;
+                previewCategory.className = 'preview-chip category-chip include';
             } else {
                 previewCategory.style.display = 'none';
             }
 
-            const includeTags = Object.keys(tagStates).filter(t => tagStates[t] === 'include');
-            if (includeTags.length > 0) {
+            let excludeString = '';
+            if (excludeCategories.length > 0) {
+                excludeString += '📂' + excludeCategories.join(', ');
+            }
+            if (excludeTags.length > 0) {
+                if (excludeString) excludeString += ' | ';
+                excludeString += excludeTags.join(', ');
+            }
+            if (excludeString && !useSummary) {
+                previewExcludeTags.style.display = 'inline-flex';
+                if (previewExcludeList) previewExcludeList.textContent = excludeString;
+                previewExcludeTags.className = 'preview-chip exclude';
+            } else {
+                previewExcludeTags.style.display = 'none';
+            }
+
+            if (includeTags.length > 0 && !useSummary) {
                 previewIncludeTags.style.display = 'inline-flex';
-                previewIncludeList.textContent = includeTags.join(', ');
-                hasFilters = true;
+                if (previewIncludeList) previewIncludeList.textContent = includeTags.join(', ');
+                previewIncludeTags.className = 'preview-chip include';
             } else {
                 previewIncludeTags.style.display = 'none';
             }
 
-            const excludeTags = Object.keys(tagStates).filter(t => tagStates[t] === 'exclude');
-            if (excludeTags.length > 0) {
-                previewExcludeTags.style.display = 'inline-flex';
-                previewExcludeList.textContent = excludeTags.join(', ');
-                hasFilters = true;
+            let favDisplay = '';
+            if (hasFavorites || favFilterActive) {
+                favDisplay = '★';
+                if (favoriteFilter === 'exclude') {
+                    favDisplay = '★×';
+                } else if (favoriteFilter === 'include') {
+                    favDisplay = '★✓';
+                }
+                if (!useSummary) {
+                    previewFavorites.style.display = 'inline-flex';
+                    previewFavorites.textContent = favDisplay;
+                    previewFavorites.className = 'preview-chip fav-chip';
+                    if (favoriteFilter === 'exclude') {
+                        previewFavorites.classList.add('exclude');
+                    }
+                } else {
+                    previewFavorites.style.display = 'none';
+                }
             } else {
-                previewExcludeTags.style.display = 'none';
+                previewFavorites.style.display = 'none';
+            }
+
+            // Summary chip – neutral white
+            if (useSummary && hasFilters) {
+                let summaryParts = [];
+                if (includeCategoryName) summaryParts.push(`📂+${includeCategoryName}`);
+                if (excludeCategories.length > 0) summaryParts.push(`📂-${excludeCategories.length}`);
+                if (includeTags.length > 0) summaryParts.push(`+${includeTags.length}`);
+                if (excludeTags.length > 0) summaryParts.push(`-${excludeTags.length}`);
+                if (favDisplay) summaryParts.push(favDisplay);
+                previewSummary.style.display = 'inline-flex';
+                previewSummary.textContent = summaryParts.join(' ');
+                previewSummary.className = 'preview-chip-summary';
+                previewSummary.style.color = '#aaa';
+                previewSummary.style.borderColor = '#444';
+                previewSummary.style.textDecoration = 'none';
+            } else {
+                previewSummary.style.display = 'none';
             }
 
             previewEmpty.style.display = hasFilters ? 'none' : 'inline';
         }
 
-        // ---------- Collapse logic (manual only) ----------
         function setCollapsed(collapsed) {
             const panel = document.getElementById('filter-panel');
             if (collapsed === isCollapsed && panel.classList.contains('collapsed') === collapsed) return;
-
             panel.classList.toggle('collapsed', collapsed);
             isCollapsed = collapsed;
         }
@@ -955,33 +1800,73 @@
             const includeCategory = Object.keys(categoryStates).find(c => categoryStates[c] === 'include');
             const excludeCategories = Object.keys(categoryStates).filter(c => categoryStates[c] === 'exclude');
 
+            const isOrMode = searchLogic === 'OR';
+
             return allSounds.filter(sound => {
+                // ---- Keyword filter (always AND) ----
                 if (keyword) {
                     const nameMatch = sound.name && sound.name.toLowerCase().includes(keyword);
                     const creatorMatch = sound.creator && sound.creator.toLowerCase().includes(keyword);
                     if (!nameMatch && !creatorMatch) return false;
                 }
 
-                if (includeCategory && sound.category !== includeCategory) return false;
+                // ---- Favorites filter ----
+                if (favoriteFilter === 'include' && !favorites.has(sound.id)) return false;
+                if (favoriteFilter === 'exclude' && favorites.has(sound.id)) return false;
+
+                // ---- Category include ----
+                let categoryIncludeMatch = true;
+                if (includeCategory) {
+                    categoryIncludeMatch = sound.category === includeCategory;
+                }
+
+                // ---- Category exclude (always AND) ----
                 if (excludeCategories.length > 0 && excludeCategories.includes(sound.category)) return false;
 
+                // ---- Tag include ----
+                let tagIncludeMatch = true;
                 if (includeTags.length > 0) {
-                    if (!sound.tags || !Array.isArray(sound.tags)) return false;
-                    const soundTagsLower = sound.tags.map(t => t.toLowerCase());
-                    for (let t of includeTags) {
-                        if (!soundTagsLower.includes(t)) return false;
+                    if (!sound.tags || !Array.isArray(sound.tags)) {
+                        tagIncludeMatch = false;
+                    } else {
+                        const soundTagsLower = sound.tags.map(t => t.toLowerCase());
+                        if (isOrMode) {
+                            tagIncludeMatch = includeTags.some(t => soundTagsLower.includes(t));
+                        } else {
+                            tagIncludeMatch = includeTags.every(t => soundTagsLower.includes(t));
+                        }
                     }
                 }
 
+                // ---- Tag exclude (always AND) ----
                 if (excludeTags.length > 0) {
-                    if (!sound.tags || !Array.isArray(sound.tags)) return true;
-                    const soundTagsLower = sound.tags.map(t => t.toLowerCase());
-                    for (let t of excludeTags) {
-                        if (soundTagsLower.includes(t)) return false;
+                    if (!sound.tags || !Array.isArray(sound.tags)) {
+                        // No tags means no match for exclude
+                        return false;
                     }
+                    const soundTagsLower = sound.tags.map(t => t.toLowerCase());
+                    // If ANY excluded tag is present, reject
+                    if (excludeTags.some(t => soundTagsLower.includes(t))) return false;
                 }
 
-                return true;
+                // ---- Combine include conditions based on mode ----
+                if (isOrMode) {
+                    // OR mode: at least one include condition must match
+                    const includeConditions = [];
+                    if (includeCategory) includeConditions.push(categoryIncludeMatch);
+                    if (includeTags.length > 0) includeConditions.push(tagIncludeMatch);
+
+                    // If there are no include conditions, default to true
+                    if (includeConditions.length === 0) return true;
+
+                    // At least one include condition must be true
+                    return includeConditions.some(cond => cond === true);
+                } else {
+                    // AND mode: all include conditions must match
+                    if (includeCategory && !categoryIncludeMatch) return false;
+                    if (includeTags.length > 0 && !tagIncludeMatch) return false;
+                    return true;
+                }
             });
         }
 
@@ -1023,7 +1908,6 @@
             const noResults = document.getElementById('no-results');
             const filtered = getFilteredSounds();
 
-            // --- SORT alphabetically by creator (case-insensitive) ---
             filtered.sort((a, b) => {
                 const creatorA = (a.creator || '').toLowerCase();
                 const creatorB = (b.creator || '').toLowerCase();
@@ -1038,19 +1922,22 @@
             noResults.style.display = 'none';
             let html = '';
             filtered.forEach(sound => {
+                const isFav = favorites.has(sound.id);
+                const favoritedClass = isFav ? ' favorited' : '';
                 const tagsHtml = (sound.tags && Array.isArray(sound.tags)) ?
                     sound.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('') :
                     '';
                 const categoryHtml = sound.category ? `<span class="category">${escapeHtml(sound.category)}</span>` : '';
                 html += `
-                    <div class="sound-card" data-id="${sound.id}" data-name="${escapeHtml(sound.name || '')}" data-creator="${escapeHtml(sound.creator || '')}">
+                    <div class="sound-card${favoritedClass}" data-id="${sound.id}" data-name="${escapeHtml(sound.name || '')}" data-creator="${escapeHtml(sound.creator || '')}">
                         <div class="title">${escapeHtml(sound.name || 'Unnamed')}</div>
                         <div class="creator">${escapeHtml(sound.creator || 'Unknown creator')}</div>
                         <div class="meta">
                             ${categoryHtml}
                             <div class="tags">${tagsHtml}</div>
                         </div>
-                        <button class="store-btn" data-id="${sound.id}" title="Open in Creator Store">🔗</button>
+                        <button class="fav-btn ${isFav ? 'favorited' : ''}" data-id="${sound.id}" title="Toggle favorite">★</button>
+                        <button class="store-btn" data-id="${sound.id}" title="Open in Creator Store">${ROBLOX_ICON}</button>
                     </div>
                 `;
             });
@@ -1058,6 +1945,14 @@
 
             grid.querySelectorAll('.sound-card').forEach(card => {
                 const id = parseInt(card.dataset.id);
+
+                const favBtn = card.querySelector('.fav-btn');
+                if (favBtn) {
+                    favBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleFavorite(id);
+                    });
+                }
 
                 const storeBtn = card.querySelector('.store-btn');
                 if (storeBtn) {
@@ -1068,7 +1963,12 @@
                 }
 
                 card.addEventListener('click', (e) => {
-                    if (e.target.closest('.store-btn')) return;
+                    if (e.altKey) {
+                        e.preventDefault();
+                        toggleFavorite(id);
+                        return;
+                    }
+                    if (e.target.closest('.fav-btn') || e.target.closest('.store-btn')) return;
                     copyToClipboard(id.toString());
                 });
             });
@@ -1083,28 +1983,46 @@
         // ---------- Event listeners ----------
         document.getElementById('keyword-input').addEventListener('input', render);
 
-        // Collapse toggle
         document.getElementById('collapse-toggle').addEventListener('click', (e) => {
             e.stopPropagation();
             toggleCollapse();
+            document.getElementById('collapse-toggle').classList.remove('attention');
         });
 
-        // Click on search bar when collapsed to expand
         document.getElementById('search-bar').addEventListener('click', (e) => {
             if (isCollapsed) {
                 if (e.target.closest('#collapse-toggle')) return;
                 setCollapsed(false);
+                document.getElementById('collapse-toggle').classList.remove('attention');
             }
         });
 
-        // Click on the panel itself when collapsed (outside of search bar) to expand
         document.getElementById('filter-panel').addEventListener('click', (e) => {
             if (isCollapsed && e.target === e.currentTarget) {
                 setCollapsed(false);
+                document.getElementById('collapse-toggle').classList.remove('attention');
             }
         });
 
+        // Settings
+        document.getElementById('settings-trigger')?.addEventListener('click', openSettings);
+        document.getElementById('close-settings').addEventListener('click', closeSettings);
+        document.getElementById('settings-overlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeSettings();
+        });
+        document.getElementById('reset-storage-btn').addEventListener('click', resetLocalStorage);
+
+        // Search Logic toggle
+        document.getElementById('logic-and').addEventListener('click', () => {
+            saveSearchLogic('AND');
+        });
+        document.getElementById('logic-or').addEventListener('click', () => {
+            saveSearchLogic('OR');
+        });
+
         // ---------- Start ----------
+        loadFavorites();
+        loadSearchLogic();
         loadData();
     </script>
 </body>
