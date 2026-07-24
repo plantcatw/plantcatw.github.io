@@ -593,6 +593,9 @@
     <div id="copy-notification">✅ Copied to clipboard!</div>
 
     <script>
+		// ---------- Cloudflare Worker endpoint (KV) ----------
+		const WORKER_URL = 'https://sound-fallback.plantaudioworker.workers.dev/sounds';
+	
         // ---------- Global state ----------
         let allSounds = [];
         let tagSet = new Set();
@@ -626,7 +629,7 @@
             { name: 'Meta', tags: ['voice', 'loop', 'pack', 'layered', 'misc'] }
         ];
 
-        // ---------- Raw Gist URL (with cache-busting) ----------
+        // ---------- Raw Gist URL ----------
         const GIST_RAW_URL = 'https://gist.githubusercontent.com/plantcatw/9f86c9ee2ebc8e85eef3b2716d7a42dc/raw/sounds.json';
 
         // ---------- Retry helper with exponential backoff ----------
@@ -650,44 +653,73 @@
             throw lastError;
         }
 
-        // ---------- Load data ----------
-        async function loadData() {
-            try {
-                const url = `${GIST_RAW_URL}?t=${Date.now()}`;
-                console.log('Fetching sounds from:', url);
-                const resp = await fetchWithRetry(url, {
-                    cache: 'no-store',
-                    mode: 'cors',
-                    credentials: 'omit'
-                }, 3);
-                allSounds = await resp.json();
-                if (!Array.isArray(allSounds)) throw new Error('Not an array');
+// ---------- Load data with Gist + KV fallback ----------
+async function loadData() {
+    const gistUrl = `${GIST_RAW_URL}?t=${Date.now()}`;
+    let soundsLoaded = false;
 
-                allSounds.forEach(s => {
-                    if (s.tags && Array.isArray(s.tags)) {
-                        s.tags.forEach(t => {
-                            const lower = t.toLowerCase();
-                            tagSet.add(lower);
-                            if (!tagOriginalMap[lower]) {
-                                tagOriginalMap[lower] = t;
-                            }
-                        });
-                    }
-                });
-                tagSet.forEach(t => { tagStates[t] = null; });
+    // Try Gist with a 3-second timeout
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const resp = await fetch(gistUrl, {
+            signal: controller.signal,
+            cache: 'no-store',
+            mode: 'cors',
+            credentials: 'omit'
+        });
+        clearTimeout(timeoutId);
+        if (!resp.ok) throw new Error(`Gist HTTP ${resp.status}`);
+        allSounds = await resp.json();
+        if (!Array.isArray(allSounds)) throw new Error('Gist response not an array');
+        soundsLoaded = true;
+        console.log('✅ Sounds loaded from Gist.');
+    } catch (gistError) {
+        console.warn('⚠️ Gist fetch failed (timeout/error), trying KV fallback...', gistError);
+    }
 
-                const categories = [...new Set(allSounds.map(s => s.category).filter(Boolean))];
-                categories.forEach(c => { categoryStates[c] = null; });
-
-                populateTagGroups();
-                render();
-                console.log('✅ Sounds loaded successfully.');
-            } catch (e) {
-                console.error('Failed to load sounds after retries:', e);
-                document.getElementById('sound-grid').innerHTML =
-                    `<div style="color:#a44;">⚠️ Could not load sound library after multiple attempts. Please refresh the page or try again later.</div>`;
-            }
+    // If Gist failed, try KV Worker
+    if (!soundsLoaded) {
+        try {
+            const resp = await fetch(WORKER_URL, {
+                cache: 'no-store',
+                mode: 'cors',
+                credentials: 'omit'
+            });
+            if (!resp.ok) throw new Error(`Worker HTTP ${resp.status}`);
+            allSounds = await resp.json();
+            if (!Array.isArray(allSounds)) throw new Error('Worker response not an array');
+            soundsLoaded = true;
+            console.log('✅ Sounds loaded from KV fallback.');
+        } catch (workerError) {
+            console.error('❌ Both Gist and KV fallback failed:', workerError);
+            document.getElementById('sound-grid').innerHTML =
+                `<div style="color:#a44;">⚠️ Could not load sound library from any source. Please try again later.</div>`;
+            return;
         }
+    }
+
+    // Process tags and categories (unchanged)
+    allSounds.forEach(s => {
+        if (s.tags && Array.isArray(s.tags)) {
+            s.tags.forEach(t => {
+                const lower = t.toLowerCase();
+                tagSet.add(lower);
+                if (!tagOriginalMap[lower]) {
+                    tagOriginalMap[lower] = t;
+                }
+            });
+        }
+    });
+    tagSet.forEach(t => { tagStates[t] = null; });
+
+    const categories = [...new Set(allSounds.map(s => s.category).filter(Boolean))];
+    categories.forEach(c => { categoryStates[c] = null; });
+
+    populateTagGroups();
+    render();
+    console.log('✅ UI updated successfully.');
+}
 
         // ---------- Populate tag groups (with categories at top) ----------
         function populateTagGroups() {
